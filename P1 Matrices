@@ -1,0 +1,88 @@
+a=[[1, 0, 2],
+[0, 3, 3,3],
+[1, 2, 2]]
+
+b=[[0,0],
+  [0,0]]
+
+c=[[1,1,1],
+  [2,2,2],
+  [3,3,3]]
+def dimension(matriz):
+   
+    x=len(matriz)
+    y=len(matriz[0])
+   
+    if(x==0):
+        return None
+    for i in range(x):
+        if(y!=len(matriz[i])):
+            return None
+    return x,y
+
+
+def es_cuadrada(matriz):
+    x=dimension(matriz)
+   
+    if(x==None):
+        return False
+    if(x[0]==x[1]):
+        return True
+   
+    return False
+   
+   
+def es_simetrica(matriz):
+
+    if(es_cuadrada(matriz)):
+       
+        n = len(matriz)
+        for i in range(n):
+            for j in range(i + 1, n):
+                if matriz[i][j] != matriz[j][i]:
+                    return False
+        return True
+   
+    return False
+
+
+def multiplica_escalar(matriz,k):
+   
+    if(dimension(matriz)==None):
+        return None
+    rows,cols=dimension(matriz)
+   
+    matrix_aux = [[0 for _ in range(cols)] for _ in range(rows)]
+   
+    for i in range(cols):
+        for u in range(rows):
+            matrix_aux[i][u]=matriz[i][u]*k
+    return matrix_aux
+       
+       
+
+def suma(matriz1,matriz2):
+    if(dimension(matriz1)!=dimension(matriz2)):
+        return None
+   
+    cols,rows=dimension(matriz1)
+   
+    matrix_aux = [[0 for _ in range(cols)] for _ in range(rows)]
+   
+    for i in range(cols):
+        for u in range(rows):
+            matrix_aux[i][u]=matriz1[i][u]+matriz2[i][u]
+    return matrix_aux
+   
+   
+   
+
+print(dimension(b))
+
+print(es_cuadrada(b))
+
+print(es_simetrica(b))
+
+print(multiplica_escalar(a,2))
+
+print(suma(a,c))
