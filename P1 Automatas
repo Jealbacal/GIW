@@ -1,0 +1,62 @@
+automata = {'alfabeto': {'a', 'b','c'},
+'estados': {'r0', 'r1'},
+'inicial': 'r0',
+'finales': {'r0'},
+'transicion': {('r0', 'a'): 'r0',
+               ('r0', 'b'): 'r1',
+               ('r1', 'a'): 'r1',
+               ('r1', 'b'): 'r1',
+}
+}
+
+print(automata)
+
+
+
+def validar(aut):
+   
+   
+    lista=['alfabeto', 'estados', 'inicial', 'finales' ,'transicion']
+    format_keys = str(aut.keys()).replace("dict_keys(", "").replace(")", "")
+     
+    print(format_keys)
+    print(lista)
+   
+    if(str(format_keys)!=str(lista)):
+        return False
+    if(len(aut['alfabeto'])==0):
+        return False
+    if(len(aut['estados'])==0):
+        return False
+    if(aut['inicial'] not in aut['estados']):
+        return False
+   
+    if(not all(item in aut['estados'] for item in aut['finales'])):
+        return False
+    print(aut['transicion']['r0','a'])
+   
+   
+   
+    #comprobar que todas las transiciones esten bien
+    #try catch
+    contador=0
+    for i in aut['estados']:
+       
+        for j in aut['alfabeto']:
+            contador+=1
+            #print(aut['transicion'][i,j])
+            if(aut['transicion'][i,j] not in aut['estados']):
+                return False
+           
+           
+    if(not contador==(len(aut['estados'])*len(aut['alfabeto']))):
+        return False
+   
+   
+    return True
+ 
+   
+   
+print('\n\n\n')
+
+validar(automata)
