@@ -1,4 +1,4 @@
-automata = {'alfabeto': {'a', 'b','c'},
+automata = {'alfabeto': {'a', 'b'},
 'estados': {'r0', 'r1'},
 'inicial': 'r0',
 'finales': {'r0'},
@@ -9,48 +9,65 @@ automata = {'alfabeto': {'a', 'b','c'},
 }
 }
 
-print(automata)
+automata_ok = {'alfabeto': {'0', '1'},
+ 'estados': {'p', 'q' , 'r'},
+ 'inicial': 'p',
+ 'finales': {'q'},
+ 'transicion': {('p', '0'): 'q',
+ ('p', '1'): 'r',
+ ('q', '0'): 'r',
+ ('q', '1'): 'q',
+ ('r', '0'): 'r',
+ ('r', '1'): 'r'
+ }
+ }
 
-
-
+automata_mal1 = {'alfabeto': {},
+ 'estados': {'p', 'q' , 'r'},
+ 'inicial': 'p',
+ 'finales': {'q'},
+ 'transicion': {('p', '0'): 'q',
+ ('p', '1'): 'r',
+ ('q', '0'): 'r',
+ ('q', '1'): 'q',
+ ('r', '0'): 'r',
+ ('r', '1'): 'r'
+ }
+ }
 def validar(aut):
    
    
     lista=['alfabeto', 'estados', 'inicial', 'finales' ,'transicion']
     format_keys = str(aut.keys()).replace("dict_keys(", "").replace(")", "")
      
-    print(format_keys)
-    print(lista)
    
     if(str(format_keys)!=str(lista)):
         return False
-    if(len(aut['alfabeto'])==0):
+    if(len(aut['alfabeto'])==0):#es vacio el alfabeto
         return False
-    if(len(aut['estados'])==0):
+    if(len(aut['estados'])==0):#es vacio el estado
         return False
-    if(aut['inicial'] not in aut['estados']):
+    if(aut['inicial'] not in aut['estados']):#inicial aparece en estados
         return False
    
-    if(not all(item in aut['estados'] for item in aut['finales'])):
+    if(not all(item in aut['estados'] for item in aut['finales'])):#todos los finales aparecen en estados
         return False
-    print(aut['transicion']['r0','a'])
+    #print(aut['transicion']['r0','a'])
    
    
    
     #comprobar que todas las transiciones esten bien
     #try catch
     contador=0
+    
     for i in aut['estados']:
        
         for j in aut['alfabeto']:
             contador+=1
-            #print(aut['transicion'][i,j])
             if(aut['transicion'][i,j] not in aut['estados']):
                 return False
-           
-           
-    if(not contador==(len(aut['estados'])*len(aut['alfabeto']))):
-        return False
+
+    
    
    
     return True
@@ -58,5 +75,121 @@ def validar(aut):
    
    
 print('\n\n\n')
+print("Validaciones\n")
 
-validar(automata)
+if(validar(automata)):
+    print ("Ok")
+else:
+    print ("Error")
+    
+if(validar(automata_ok)):
+    print ("Ok")
+else:
+    print ("Error")
+    
+if(validar(automata_mal1)):
+    print ("Ok")
+else:
+    print ("Error")
+
+#=====================================================================
+
+def aceptar(cadena,automata):
+    if(not validar(automata)):
+        return false
+    
+    next_state=automata['inicial']
+    for i in cadena:
+        if(i not in automata['alfabeto']):
+            return False
+        
+        next_state=automata['transicion'][next_state,i]
+        
+    if(not next_state in automata['finales']):
+        return False
+    return True
+
+print("\n\n\n")
+print("Aceptaciones\n")
+if(aceptar('0111',automata_ok)):
+    print("OK")
+else:
+    print("ERROR")
+    
+    
+#============================================================================
+automata1 = {'alfabeto': {'a', 'b'},
+ 'estados': {'q0', 'q1' , 'q2'},
+ 'inicial': 'q0',
+ 'finales': {'q0', 'q2'},
+ 'transicion': {('q0', 'a'): 'q2',
+ ('q0', 'b'): 'q1',
+ ('q1', 'a'): 'q1',
+ ('q1', 'b'): 'q1',
+ ('q2', 'a'): 'q0',
+ ('q2', 'b'): 'q1',
+ }
+ }
+
+automata2 = {'alfabeto': {'a', 'b'},
+ 'estados': {'r0', 'r1'},
+ 'inicial': 'r0',
+ 'finales': {'r0'},
+ 'transicion': {('r0', 'a'): 'r0',
+ ('r0', 'b'): 'r1',
+ ('r1', 'a'): 'r1',
+ ('r1', 'b'): 'r1',
+ }
+ }
+automata3 = {'alfabeto': {'a', 'b'},
+ 'estados': {'s0', 's1', 's2', 's3'},
+ 'inicial': 's0',
+ 'finales': {'s2'},
+ 'transicion': {('s0', 'a'): 's1',
+ ('s0', 'b'): 's3',
+ ('s1', 'a'): 's3',
+ ('s1', 'b'): 's2',
+ ('s2', 'a'): 's3',
+ ('s2', 'b'): 's2',
+ ('s3', 'a'): 's3',
+ ('s3', 'b'): 's3',
+ }
+ }
+
+def are_equivalent(aut1, aut2):
+    
+    #if(not validar(aut1)and validar(aut2)):
+        3return False
+    
+    alfabeto=aut1['alfabeto']#igual en los 2 en teoria
+    if(alfabeto!=aut2['alfabeto']):
+        return False #just in case
+    
+    nodos=[(aut1['inicial'],aut2['inicial'])]
+
+    
+    while(nodos):
+        
+        for a in alfabeto:
+            next1=aut1['transicion'][nodos[-1][0],a]
+            next2=aut2['transicion'][nodos[-1][1],a]
+            
+            if(next1 is not None and next2 is not None):
+                end1=next1 in aut1['finales']
+                end2=next2 in aut2['finales']
+                if(end1!=end2):
+                    return False
+            par=(next1,next2)
+            if(par not in nodos):
+                nodos.append(par)
+    return True
+
+
+print("\n\n\n")
+print("Equivalencias\n")
+
+if(are_equivalent(automata1,automata2)):
+    print("OK")
+    
+else:
+    print("ERROR")
