@@ -41,7 +41,7 @@ def validar(aut):
     format_keys = str(aut.keys()).replace("dict_keys(", "").replace(")", "")
      
    
-    if(str(format_keys)!=str(lista)):
+    if(str(format_keys)!=str(lista)):#comprueba las claves
         return False
     if(len(aut['alfabeto'])==0):#es vacio el alfabeto
         return False
@@ -54,22 +54,21 @@ def validar(aut):
         return False
     #print(aut['transicion']['r0','a'])
    
-   
-   
     #comprobar que todas las transiciones esten bien
     #try catch
+    #en teoria todos los alfabetos y estados se deben de usar
+    #por lo que no hay estados sin usar el for no deberia salir fuera de indice
     contador=0
-    
-    for i in aut['estados']:
-       
-        for j in aut['alfabeto']:
-            contador+=1
-            if(aut['transicion'][i,j] not in aut['estados']):
-                return False
-
-    
-   
-   
+    try:
+        for i in aut['estados']:
+        
+            for j in aut['alfabeto']:
+                contador+=1
+                if(aut['transicion'][i,j] not in aut['estados']):
+                    return False
+    except IndexError:
+        print("Tienes un estado o alfabeto sin usar")
+        
     return True
  
    
@@ -96,16 +95,16 @@ else:
 
 def aceptar(cadena,automata):
     if(not validar(automata)):
-        return false
+        return False
     
     next_state=automata['inicial']
     for i in cadena:
-        if(i not in automata['alfabeto']):
+        if(i not in automata['alfabeto']):#si la cadena esta mal
             return False
         
         next_state=automata['transicion'][next_state,i]
         
-    if(not next_state in automata['finales']):
+    if(not next_state in automata['finales']):#comprueba estado final despues de la cadena
         return False
     return True
 
@@ -159,36 +158,41 @@ automata3 = {'alfabeto': {'a', 'b'},
 def are_equivalent(aut1, aut2):
     
     #if(not validar(aut1)and validar(aut2)):
-        3return False
+        #return False
     
     alfabeto=aut1['alfabeto']#igual en los 2 en teoria
     if(alfabeto!=aut2['alfabeto']):
         return False #just in case
     
-    nodos=[(aut1['inicial'],aut2['inicial'])]
-
+    nodos=[(aut1['inicial'],aut2['inicial'])]#inicializo el primer nodo
+    nodos_existentes=[(aut1['inicial'],aut2['inicial'])]#
     
     while(nodos):
         
+        n1,n2=nodos.pop()#borro el ultimo del nodo sino bucle no acaba nunca
         for a in alfabeto:
-            next1=aut1['transicion'][nodos[-1][0],a]
-            next2=aut2['transicion'][nodos[-1][1],a]
+            next1=aut1['transicion'][n1,a]#cojo las transiciones
+            next2=aut2['transicion'][n2,a]
             
             if(next1 is not None and next2 is not None):
                 end1=next1 in aut1['finales']
                 end2=next2 in aut2['finales']
-                if(end1!=end2):
+                if(end1!=end2):#si ambos llegan a un estado final
                     return False
             par=(next1,next2)
-            if(par not in nodos):
+            if(par not in nodos_existentes):#se añade un nuevo nodo
                 nodos.append(par)
+                nodos_existentes.append(par)
+    
+    #si ha podido salir del while y no ha dado False
+    #los dos automatas son equivalentes 
     return True
 
 
 print("\n\n\n")
 print("Equivalencias\n")
 
-if(are_equivalent(automata1,automata2)):
+if(are_equivalent(automata1,automata3)):
     print("OK")
     
 else:
