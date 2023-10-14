@@ -18,61 +18,15 @@ import json
 import csv
 from geopy.geocoders import Nominatim
 from geopy import distance
+from pprint import pprint
+
 
 # Formato CSV
 
 
 def lee_fichero_accidentes(ruta):
-    with open("AccidentesBicicletas_2021.csv", encoding="utf-8") as archivo:
-        accidentes = []
-
-        for linea in archivo:
-            linea = linea.rstrip("\n")
-            columna = linea.split(";")
-            cod_distrito = columna[5]
-            cod_lesividad = columna[13]
-            coordeanda_x_utm = columna[15]
-            coordeanda_y_utm = columna[16]
-            distrito = columna[6]
-            estado_meteorologico = columna[8]
-            fecha = columna[1]
-            hora = columna[2]
-            localizacion = columna[3]
-            num_expediente = columna[0]
-            numero = columna[4]
-            positiva_alcohol = columna[17]
-            positiva_droga = columna[18]
-            rango_edad = columna[11]
-            sexo = columna[12]
-            tipo_accidente = columna[7]
-            tipo_lesividad = columna[14]
-            tipo_persona = columna[10]
-            tipo_vehiculo = columna[9]
-            accidentes.append({
-
-                "cod_distrito": cod_distrito,
-                "cod_lesividad ":  cod_lesividad,
-                "coordeanda_x_utm": coordeanda_x_utm,
-                "coordeanda_y_utm": coordeanda_y_utm,
-                "distrito": distrito,
-                "estado_meteorologico":  estado_meteorologico,
-                "fecha": fecha,
-                "hora": hora,
-                "localizacion": localizacion,
-                "num_expediente": num_expediente,
-                "numero": numero,
-                "positiva_alcohol":  positiva_alcohol,
-                "positiva_droga": positiva_droga,
-                "rango_edad": rango_edad,
-                "sexo": sexo,
-                "tipo_accidente": tipo_accidente,
-                "tipo_lesividad":  tipo_lesividad,
-                "tipo_persona": tipo_persona,
-                "tipo_vehiculo": tipo_vehiculo
-
-            })
-
-        return accidentes[1::]
+    with open(ruta, 'r', newline='', encoding='utf8') as file:
+        return list(csv.DictReader(file, delimiter=';'))
 
 
 def accidentes_por_distrito_tipo(datos):
@@ -172,3 +126,6 @@ def busqueda_distancia(monumentos, calle, distancia):
             lista.append((a['nombre'], a['subtipo'], dist))
 
     return lista
+
+
+# pprint(lee_fichero_accidentes("AccidentesBicicletas_2021.csv")[:10])
