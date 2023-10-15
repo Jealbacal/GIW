@@ -45,23 +45,31 @@ def accidentes_por_distrito_tipo(datos):
     return result
 
 
-ruta = "AccidentesBicicletas_2021.csv"
 
-def dias_mas_accidentes(ruta):
+
+def dias_mas_accidentes(datos):
     dict = {}  # Crear un diccionario vacío para almacenar los recuentos
+    res=[]     # Crear una lista resultado vacia
+   
+        
+    for linea in datos:
+        if linea['fecha'] in dict:# si esta en el diccionario le sumamos uno al valor si es nuevo se pone a 1
+            dict[linea['fecha']] += 1
+        else:
+            dict[linea['fecha']] = 1
+        
 
-    with open(ruta, 'r', newline='',encoding="utf-8") as archivo:
-        datos = csv.reader(archivo,delimiter=";")
-        next(archivo)  # Saltar la primera fila si contiene encabezados
-        for linea in datos:
-            if linea[1] in dict:# si esta en el diccionario le sumamos uno al valor si es nuevo se pone a 1
-                dict[linea[1]] += 1
-            else:
-                dict[linea[1]] = 1
-
-    return dict
+    a = max(dict.values()) # tomo el valor maximo del diccionario
+        
+    for key,value in dict.items(): # recorro el diccionario para ver que claves tienen ese valor y meterlas en la lista
+                                    # que se va a devolver como resultado
+            
+        if a is value :
+            res.append((key,value))
+                
+    return res
        
-dias_mas_accidentes(ruta)
+
 
 def puntos_negros_distrito(datos, distrito, k):
     distritoList = []
