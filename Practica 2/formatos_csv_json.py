@@ -1,4 +1,3 @@
-# TODO: rellenar
 # Asignatura: GIW
 # Práctica 2
 # Grupo: 04
@@ -20,7 +19,6 @@ from geopy.geocoders import Nominatim
 from geopy import distance
 from pprint import pprint
 
-
 # Formato CSV
 
 
@@ -32,7 +30,7 @@ def lee_fichero_accidentes(ruta):
 def accidentes_por_distrito_tipo(datos):
     lista = []
     result = {}
-    for linea in datos:
+    for linea in datos:  # bucle para hacer las tupla Distrito-Tipo de Accidente
         distrito = linea.get('distrito')
         accidente = linea.get('tipo_accidente')
         aux = (distrito, accidente)
@@ -40,56 +38,58 @@ def accidentes_por_distrito_tipo(datos):
         lista.sort()
 
     for tupla in lista:
+        # bulce para contar las tuplas que se repiten y agregarlas como valor al diccionario final
         result[tupla] = lista.count(tupla)
 
     return result
 
 
-
-
 def dias_mas_accidentes(datos):
     dict = {}  # Crear un diccionario vacío para almacenar los recuentos
-    res=[]     # Crear una lista resultado vacia
-   
-        
+    res = []     # Crear una lista resultado vacia
+
     for linea in datos:
-        if linea['fecha'] in dict:# si esta en el diccionario le sumamos uno al valor si es nuevo se pone a 1
+        # si esta en el diccionario le sumamos uno al valor si es nuevo se pone a 1
+        if linea['fecha'] in dict:
             dict[linea['fecha']] += 1
         else:
             dict[linea['fecha']] = 1
-        
 
-    a = max(dict.values()) # tomo el valor maximo del diccionario
-        
-    for key,value in dict.items(): # recorro el diccionario para ver que claves tienen ese valor y meterlas en la lista
-                                    # que se va a devolver como resultado
-            
-        if a is value :
-            res.append((key,value))
-                
+    a = max(dict.values())  # tomo el valor maximo del diccionario
+
+    for key, value in dict.items():  # recorro el diccionario para ver que claves tienen ese valor y meterlas en la lista
+        # que se va a devolver como resultado
+
+        if a is value:
+            res.append((key, value))
+
     return res
-       
 
 
 def puntos_negros_distrito(datos, distrito, k):
     distritoList = []
     result = []
+    # filtrado de los datos por el distrito pedido
     distritoList = [x for x in datos if x.get('distrito') == distrito]
+    # lista de las localidades del distrito pedido
     localidades = [x.get('localizacion') for x in distritoList]
 
+    # bulce para la formacion de la tupla Localidad - cantidad de accidentes (en esa localidad)
     for linea in distritoList:
         local = linea.get('localizacion')
         tupla = (local, localidades.count(local))
         if tupla not in result:
             result.append(tupla)
 
+    # reordenamiento en funcion al segundo parametro de la tupla
     result.sort(key=lambda x: (x[1], x[0]), reverse=True)
-    result = result[:k]
-
+    result = result[:k]  # devuelve los primero K elementos de la lista
+    return result
 
 # Formato JSON
+
+
 def leer_monumentos(json_file):
-    #print("Opening json file with name\n", json_file)
 
     with open(json_file, 'r', encoding="utf8") as Fichero:
         data = json.load(Fichero)
@@ -106,19 +106,19 @@ def leer_monumentos(json_file):
 
 def subtipos_monumentos(monumentos):
     lista_subtipos = []
-    for a in monumentos:
+    for a in monumentos:  # forma la lista de monumentos
         tipo = a['subtipo']
         if (tipo not in lista_subtipos):
             lista_subtipos.append(tipo)
 
-    lista_subtipos.sort()
+    lista_subtipos.sort()  # sort
     return lista_subtipos
 
 
 def busqueda_palabras_clave(monumentos, palabras):
     longitud = len(palabras)
     lista = []
-    for a in monumentos:
+    for a in monumentos:  # foamr la lista de monumentos que encajan con las palabras claves
         nombre = a['nombre']
         desc = a['descripcion']
         contador = 0
@@ -141,7 +141,7 @@ def location(calle):
 def busqueda_distancia(monumentos, calle, distancia):
     localizacion = location(calle)
     lista = []
-    for a in monumentos:
+    for a in monumentos:  # forma la lista de tuplas Nombre-Subtipo-Distancia segun la calle y distancia otorgadas
         loc = (a['latitud'], a['longitud'])
         dist = distance.distance(localizacion, loc).km
         if (dist < distancia):
@@ -149,13 +149,3 @@ def busqueda_distancia(monumentos, calle, distancia):
 
     lista.sort(key=lambda x: (x[2], x[0], x[1]))
     return lista
-
-
-# pprint(lee_fichero_accidentes("AccidentesBicicletas_2021.csv")[:10])
-# pprint(leer_monumentos("300356-0-monumentos-ciudad-madrid.json")[:10])
-# pprint(subtipos_monumentos(leer_monumentos(
-#     "300356-0-monumentos-ciudad-madrid.json")))
-# pprint(busqueda_palabras_clave(leer_monumentos(
-#     "300356-0-monumentos-ciudad-madrid.json"), ['escultura', 'agua']))
-pprint(busqueda_distancia(leer_monumentos(
-    "300356-0-monumentos-ciudad-madrid.json"), "Profesor José García Santesmases, Madrid, España", 1))
