@@ -89,7 +89,7 @@ def puntos_negros_distrito(datos, distrito, k):
 
 # Formato JSON
 def leer_monumentos(json_file):
-    print("Opening json file with name\n", json_file)
+    #print("Opening json file with name\n", json_file)
 
     with open(json_file, 'r', encoding="utf8") as Fichero:
         data = json.load(Fichero)
@@ -147,7 +147,15 @@ def busqueda_distancia(monumentos, calle, distancia):
         if (dist < distancia):
             lista.append((a['nombre'], a['subtipo'], dist))
 
+    lista.sort(key=lambda x: (x[2], x[0], x[1]))
     return lista
 
 
 # pprint(lee_fichero_accidentes("AccidentesBicicletas_2021.csv")[:10])
+# pprint(leer_monumentos("300356-0-monumentos-ciudad-madrid.json")[:10])
+# pprint(subtipos_monumentos(leer_monumentos(
+#     "300356-0-monumentos-ciudad-madrid.json")))
+# pprint(busqueda_palabras_clave(leer_monumentos(
+#     "300356-0-monumentos-ciudad-madrid.json"), ['escultura', 'agua']))
+pprint(busqueda_distancia(leer_monumentos(
+    "300356-0-monumentos-ciudad-madrid.json"), "Profesor José García Santesmases, Madrid, España", 1))
