@@ -2,6 +2,9 @@
 
 import xml.sax
 import html
+from xml.etree import ElementTree
+from geopy import distance
+from geopy.geocoders import Nominatim
 
 def nombres_restaurantes(filename):
     class NameHandler(xml.sax.ContentHandler):
@@ -40,8 +43,38 @@ def info_restaurante(filename, name):
     ...
 
 
+
+
+
+def location(lugar):
+    geolocator = Nominatim(user_agent="Ejemplo")
+    location = geolocator.geocode(lugar, addressdetails=True)
+    return (location.latitude, location.longitude)
+
 def busqueda_cercania(filename, lugar, n):
-    ...
+    l = []
+    arbol= ElementTree.parse(filename)
+    raiz = arbol.getroot()
+    
+    sitio = location(lugar)
+    for service in raiz.iter('service'): #Voy metiendome y buscando lo que necesito en este caso las distancias de cada restaurante y 
+                                            #el nombre
+        name = service.find('.//name').text
+        latitude = float(service.find('.//latitude').text)
+        longitude = float(service.find('.//longitude').text)
+        coords = (latitude, longitude)
+        dist = distance.distance(sitio,coords).km
+        
+        # Si la distancia es menor o igual a n kilómetros, agregar a la lista
+        if dist <= n:
+            restaurante_nombre = html.unescape(name)
+            l.append((dist, restaurante_nombre))
+
+    l.sort(key=lambda x: x[0])
+    return l
+    
+
+print(busqueda_cercania('restaurantes_v1_es_pretty.xml','Profesor José García Santesmases, Madrid, España', 3))
 
 
 print("funciona")
