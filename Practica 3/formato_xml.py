@@ -13,13 +13,12 @@
 # deshonesta ninguna otra actividad que pueda mejorar nuestros resultados ni perjudicar los
 # resultados de los demás.
 
-import pprint
+from pprint import pprint
 import xml.sax
 import html
 from xml.etree import ElementTree
 from geopy import distance
 from geopy.geocoders import Nominatim
-from xml.etree import ElementTree as Et
 from xml.etree.ElementTree import iterparse
 
 
@@ -39,7 +38,7 @@ def nombres_restaurantes(filename):
 
         def characters(self, content):
             if self.curr_path == ["serviceList", "service", "basicData", "name"]:
-                self.name.append(html.unescape(content))
+                self.name.append(html.unescape(content.lstrip()))
             
     parser=xml.sax.make_parser()        
     handler=NameHandler()
@@ -52,8 +51,7 @@ def nombres_restaurantes(filename):
   
     return sorted(handler.name)  
 
-
-print(nombres_restaurantes("restaurantes_v1_es.xml")) 
+# pprint(nombres_restaurantes("restaurantes_v1_es.xml")) 
 
 def subcategorias(filename):
 
@@ -95,13 +93,10 @@ def subcategorias(filename):
 
     return Ejercicio2Handler.lista
 
-
-for i in subcategorias("restaurantes_v1_es_pretty.xml"):
-    print(i)
-
+pprint(subcategorias("restaurantes_v1_es.xml"))
 
 def info_restaurante(filename, name):
-    arbol = Et.parse(filename)
+    arbol = ElementTree.parse(filename)
 
     for nodo in arbol.findall("./service"):
         nombre = nodo.find('./basicData/name').text
@@ -118,8 +113,6 @@ def info_restaurante(filename, name):
             return result
     return None
 
-
-pprint(info_restaurante("restaurantes_V1_es_pretty.xml", "Hasaku Nikei"))
 
 def location(lugar):
     geolocator = Nominatim(user_agent="Ejemplo")
@@ -147,8 +140,4 @@ def busqueda_cercania(filename, lugar, n):
 
     l.sort(key=lambda x: x[0])
     return l
-    
-
-print(busqueda_cercania('restaurantes_v1_es_pretty.xml','Profesor José García Santesmases, Madrid, España', 3))
-
 
