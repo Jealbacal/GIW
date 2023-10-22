@@ -1,5 +1,5 @@
 # Asignatura: GIW
-# Práctica 2
+# Práctica 3
 # Grupo: 04
 # Autores:  Jesús Alberto Barrios Caballero
 #           José Javier Carrasco Ferri
@@ -13,15 +13,12 @@
 # deshonesta ninguna otra actividad que pueda mejorar nuestros resultados ni perjudicar los
 # resultados de los demás.
 
-from pprint import pprint
 import xml.sax
 import html
 from xml.etree import ElementTree
 from geopy import distance
 from geopy.geocoders import Nominatim
 from xml.etree.ElementTree import iterparse
-
-
 
 def nombres_restaurantes(filename):
     class NameHandler(xml.sax.ContentHandler):
@@ -37,8 +34,8 @@ def nombres_restaurantes(filename):
             self.curr_path.pop()
 
         def characters(self, content):
-            if self.curr_path == ["serviceList", "service", "basicData", "name"]:
-                self.name.append(html.unescape(content.lstrip()))
+            if self.curr_path == ["serviceList", "service", "basicData", "name"]: 
+                self.name.append(html.unescape(content.lstrip())) # escapamos el nombre que nos interesa y los espacios a la izquierda
             
     parser=xml.sax.make_parser()        
     handler=NameHandler()
@@ -51,39 +48,38 @@ def nombres_restaurantes(filename):
   
     return sorted(handler.name)  
 
-# pprint(nombres_restaurantes("restaurantes_v1_es.xml")) 
-
 def subcategorias(filename):
 
     class Ejercicio2Handler(xml.sax.ContentHandler):
 
-        lista = []
+        lista = [] 
         categoria = ""
         subcategoria = ""
+        is_num = False # booelano para diferenciar item numerico de item de texto
         
         def __init__(self):
             self.curr_path = [] 
             self.name = []
 
         def startElement(self, name, attrs):
-            self.curr_path.append(name)
-            
-            
-            if name == "item":
-                if attrs["name"] != "idCategoria" or attrs["name"] != "idSubCategoria":
-                    self.curr_path.append(name)
-            else:
-                self.curr_path.append(name)
+            if name == "item": # Escapar cadenas de numeros en en item subcategorias
+                if attrs["name"] == "idSubCategoria":
+                    self.is_num = True
+                else:
+                    self.is_num = False
 
+            self.curr_path.append(name)
+           
         def endElement(self, name):
             self.curr_path.pop()
 
         def characters(self, content):
-            if len(self.curr_path) >= 2 and self.curr_path[-2:] == ["categoria","item"]:
+            if len(self.curr_path) >= 2 and self.curr_path[-2:] == ["categoria","item"]: #Si llegamos al item de categoria
                 self.categoria = content
-            if len(self.curr_path) >= 4 and self.curr_path[-4:] == ["categoria","subcategorias","subcategoria","item"]:
-                self.subcategoria = content
-                self.lista.append((self.categoria,self.subcategoria))
+            if len(self.curr_path) >= 4 and self.curr_path[-4:] == ["categoria","subcategorias","subcategoria","item"]: #Si llegamos al item de subcategoria
+                if (not self.is_num):
+                    self.subcategoria = content
+                    self.lista.append((self.categoria,self.subcategoria))
     
     parser = xml.sax.make_parser()
     parser.setContentHandler(Ejercicio2Handler())
@@ -92,8 +88,6 @@ def subcategorias(filename):
         parser.parse(fichero)
 
     return Ejercicio2Handler.lista
-
-pprint(subcategorias("restaurantes_v1_es.xml"))
 
 def info_restaurante(filename, name):
     arbol = ElementTree.parse(filename)
@@ -126,7 +120,7 @@ def busqueda_cercania(filename, lugar, n):
     
     sitio = location(lugar)
     for service in raiz.iter('service'): #Voy metiendome y buscando lo que necesito en este caso las distancias de cada restaurante y 
-                                            #el nombre
+                                            #el nombre, para la distancia almacenamos latitud y longitud y usamos la funcion de la P2 con geopy
         name = service.find('.//name').text
         latitude = float(service.find('.//latitude').text)
         longitude = float(service.find('.//longitude').text)
@@ -138,6 +132,6 @@ def busqueda_cercania(filename, lugar, n):
             r_name = html.unescape(name)
             l.append((dist, r_name))
 
-    l.sort(key=lambda x: x[0])
+    l.sort(key=lambda x: x[0]) #ordena
     return l
 
