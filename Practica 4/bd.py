@@ -20,71 +20,79 @@ import sqlite3
 import csv
 from datetime import datetime
 
+
 def crear_bd(db_filename):
 
     conn = sqlite3.connect(db_filename)
     cur = conn.cursor()
-    
+
     cur.execute("DROP TABLE IF EXISTS Datos_generales")
     cur.execute("DROP TABLE IF EXISTS IBEX35")
     cur.execute("DROP TABLE IF EXISTS SemanalesIBEX35")
-    
-    cur.execute("CREATE TABLE Datos_generales (Ticker TEXT PRIMARY KEY, Nombre TEXT, Índice TEXT, País TEXT)")
+
+    cur.execute(
+        "CREATE TABLE Datos_generales (Ticker TEXT PRIMARY KEY, Nombre TEXT, Índice TEXT, País TEXT)")
     cur.execute("CREATE TABLE IBEX35 (Ticker TEXT PRIMARY KEY REFERENCES Datos_generales(Ticker),Precio REAL, Var_Porcentage REAL, Var_Euros REAL,MAX REAL,MIN REAL,Volumen REAL)")
-    cur.execute("CREATE TABLE SemanalesIBEX35 (Ticker TEXT REFERENCES Datos_generales(Ticker), Fecha TEXT, Price REAL)")
-    
+    cur.execute(
+        "CREATE TABLE SemanalesIBEX35 (Ticker TEXT REFERENCES Datos_generales(Ticker), Fecha TEXT, Price REAL)")
+
     conn.commit()
     conn.close()
-    
-crear_bd("prueba.sqlite3")  
+
+
+crear_bd("prueba.sqlite3")
+
 
 def nueva_fecha(fecha):
-    x= datetime.strptime(fecha,
-                  '%d/%m/%Y %H:%M')
-    fechaISO= x.strftime('%Y-%m-%d %H:%M')
+    x = datetime.strptime(fecha,
+                          '%d/%m/%Y %H:%M')
+    fechaISO = x.strftime('%Y-%m-%d %H:%M')
     return fechaISO
 
-def crear_bd(db_filename,tab1,tab2,tab3):
-    
+
+def crear_bd(db_filename, tab1, tab2, tab3):
+
     conn = sqlite3.connect(db_filename)
     cur = conn.cursor()
 
-    with open(tab1,newline='',encoding='utf-8') as file:
-        r = csv.reader(file,delimiter=';')
+    with open(tab1, newline='', encoding='utf-8') as file:
+        r = csv.reader(file, delimiter=';')
         next(r)
         # for row in r:
         #     print(row)
         #     cur.execute("INSERT INTO Datos_generales VALUES (?,?,?,?)",row)
-        
-        cur.executemany("INSERT INTO Datos_generales VALUES (?,?,?,?)",r)
-    
-    with open(tab2,newline='',encoding='utf-8') as file:
-        r = csv.reader(file,delimiter=';')
+
+        cur.executemany("INSERT INTO Datos_generales VALUES (?,?,?,?)", r)
+
+    with open(tab2, newline='', encoding='utf-8') as file:
+        r = csv.reader(file, delimiter=';')
         next(r)
         # for row in r:
         #     cur.execute("INSERT INTO Datos_generales VALUES (?,?,?,?)",row)
-        cur.executemany("INSERT INTO IBEX35 VALUES (?,?,?,?,?,?,?)",r)
-        
-    with open(tab3,newline='',encoding='utf-8') as file:
-        r = csv.reader(file,delimiter=';')
+        cur.executemany("INSERT INTO IBEX35 VALUES (?,?,?,?,?,?,?)", r)
+
+    with open(tab3, newline='', encoding='utf-8') as file:
+        r = csv.reader(file, delimiter=';')
         next(r)
         for row in r:
-            fecha= row[1]
+            fecha = row[1]
             row[1] = nueva_fecha(fecha)
-            cur.execute("INSERT INTO SemanalesIBEX35 VALUES (?,?,?)",row)
+            cur.execute("INSERT INTO SemanalesIBEX35 VALUES (?,?,?)", row)
         # cur.executemany("INSERT INTO SemanalesIBEX35 VALUES (?,?,?)",r)
-    
+
     # cur = conn.execute("SELECT * FROM SemanalesIBEX35")
     # while True:
     #     filas = cur.fetchmany()
-    #     if not filas: 
+    #     if not filas:
     #         break
     #     for fila in filas:
     #         print(fila)
     conn.commit()
     conn.close()
 
-crear_bd("prueba.sqlite3","Tabla1.csv","Tabla2(IBEX35).csv","Tabla3(SemanalesIBEX35).csv")
+
+crear_bd("prueba.sqlite3", "Tabla1.csv",
+         "Tabla2(IBEX35).csv", "Tabla3(SemanalesIBEX35).csv")
 
 
 def consulta1(db_filename, limite):
@@ -99,5 +107,5 @@ def consulta3(db_filename, limite):
     ...
 
 
-def consulta4(db_filename, ticker):s
+def consulta4(db_filename, ticker):
     ...
