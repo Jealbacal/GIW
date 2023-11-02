@@ -104,8 +104,46 @@ def consulta2(db_filename):
 
 
 def consulta3(db_filename, limite):
-    ...
+   
+    conn = sqlite3.connect("prueba.sqlite3") 
+    cursor = conn.cursor()
 
+    query = f"""
+    SELECT S.Ticker, D.Nombre, AVG(S.Price) AS Media, MAX(S.Price) - MIN(S.Price) AS Diferencia
+    FROM {db_filename} AS S
+    INNER JOIN Datos_generales AS D ON S.Ticker = D.Ticker 
+    WHERE S.Ticker IN (
+        SELECT Ticker
+        FROM {db_filename}
+        GROUP BY Ticker
+        HAVING AVG(Price) >= {limite}
+    )
+    GROUP BY S.Ticker
+    """
+    cursor.execute(query)
+    media_resultados = cursor.fetchall()
+    conn.close()
+    media_resultados = sorted(media_resultados, key=lambda x: x[2], reverse=True)
+    return media_resultados
 
 def consulta4(db_filename, ticker):
-    ...
+    conn = sqlite3.connect("prueba.sqlite3") 
+    cursor = conn.cursor()
+
+    query = f'''
+    SELECT Ticker, strftime('%Y-%m-%d', Fecha) as Fecha, Price
+    FROM {db_filename}
+    WHERE Ticker = "{ticker}"
+    ORDER BY Fecha DESC
+    '''
+    cursor.execute(query)
+    result = cursor.fetchall()
+ 
+    conn.close()
+    
+    return result
+    
+
+print(consulta3("SemanalesIBEX35",10))
+
+print(consulta4("SemanalesIBEX35","ANA"))
