@@ -20,6 +20,8 @@ import sqlite3
 import csv
 from datetime import datetime
 
+from pprint import pprint
+
 
 def crear_bd(db_filename):
 
@@ -96,11 +98,42 @@ crear_bd("prueba.sqlite3", "Tabla1.csv",
 
 
 def consulta1(db_filename, limite):
-    ...
+    
+    conn = sqlite3.connect(db_filename)
+    cursor = conn.cursor()
+
+    query = f"""
+            SELECT D.Ticker,D.Nombre,I.Var_Porcentage,I.Var_Euros 
+            FROM IBEX35 AS I JOIN Datos_generales AS D ON I.Ticker=D.Ticker
+            WHERE Var_Porcentage >= {limite} 
+            ORDER BY Var_Porcentage DESC
+            """
+    
+    cursor.execute(query)
+    result = cursor.fetchall()
+    conn.close()
+    return result
+
+# pprint(consulta1("prueba.sqlite3",-1))
 
 
 def consulta2(db_filename):
-    ...
+    
+    conn = sqlite3.connect(db_filename)
+    cursor = conn.cursor()
+
+    query = f"""
+            SELECT D.Ticker,D.Nombre,I.MAX 
+            FROM IBEX35 AS I JOIN Datos_generales AS D ON I.Ticker=D.Ticker 
+            ORDER BY D.Nombre ASC
+            """
+    
+    cursor.execute(query)
+    result = cursor.fetchall()
+    conn.close()
+    return result
+
+#pprint(consulta2("prueba.sqlite3"))
 
 
 def consulta3(db_filename, limite):
@@ -144,6 +177,6 @@ def consulta4(db_filename, ticker):
     return result
     
 
-print(consulta3("SemanalesIBEX35",10))
+#print(consulta3("SemanalesIBEX35",10))
 
-print(consulta4("SemanalesIBEX35","ANA"))
+#print(consulta4("SemanalesIBEX35","ANA"))
