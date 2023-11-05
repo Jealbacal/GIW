@@ -1,6 +1,4 @@
 """
-TODO: rellenar
-
 Asignatura: GIW
 Práctica 4
 Grupo: 04
@@ -20,14 +18,12 @@ import sqlite3
 import csv
 from datetime import datetime
 
-from pprint import pprint
-
-
 def crear_bd(db_filename):
 
     conn = sqlite3.connect(db_filename)
     cur = conn.cursor()
 
+    #Creamos el fichero nos conectamos y dropeamos las tablas en caso de que existan y creamos las tablas segun lo pedido
     cur.execute("DROP TABLE IF EXISTS Datos_generales")
     cur.execute("DROP TABLE IF EXISTS IBEX35")
     cur.execute("DROP TABLE IF EXISTS SemanalesIBEX35")
@@ -41,60 +37,38 @@ def crear_bd(db_filename):
     conn.commit()
     conn.close()
 
-
-crear_bd("prueba.sqlite3")
-
-
+#Funcion auxiliar para coambiar el formato a la fecha
 def nueva_fecha(fecha):
     x = datetime.strptime(fecha,
                           '%d/%m/%Y %H:%M')
     fechaISO = x.strftime('%Y-%m-%d %H:%M')
     return fechaISO
 
-
-def crear_bd(db_filename, tab1, tab2, tab3):
+def cargar_bd(db_filename, tab1, tab2, tab3):
 
     conn = sqlite3.connect(db_filename)
     cur = conn.cursor()
-
+    #Recorremos cada linea del csv para meterlas en la tabla correspiente
     with open(tab1, newline='', encoding='utf-8') as file:
         r = csv.reader(file, delimiter=';')
         next(r)
-        # for row in r:
-        #     print(row)
-        #     cur.execute("INSERT INTO Datos_generales VALUES (?,?,?,?)",row)
-
         cur.executemany("INSERT INTO Datos_generales VALUES (?,?,?,?)", r)
 
     with open(tab2, newline='', encoding='utf-8') as file:
         r = csv.reader(file, delimiter=';')
         next(r)
-        # for row in r:
-        #     cur.execute("INSERT INTO Datos_generales VALUES (?,?,?,?)",row)
         cur.executemany("INSERT INTO IBEX35 VALUES (?,?,?,?,?,?,?)", r)
 
     with open(tab3, newline='', encoding='utf-8') as file:
         r = csv.reader(file, delimiter=';')
         next(r)
+        #se recoge la fecha y se cambia el formato
         for row in r:
             fecha = row[1]
             row[1] = nueva_fecha(fecha)
             cur.execute("INSERT INTO SemanalesIBEX35 VALUES (?,?,?)", row)
-        # cur.executemany("INSERT INTO SemanalesIBEX35 VALUES (?,?,?)",r)
-
-    # cur = conn.execute("SELECT * FROM SemanalesIBEX35")
-    # while True:
-    #     filas = cur.fetchmany()
-    #     if not filas:
-    #         break
-    #     for fila in filas:
-    #         print(fila)
     conn.commit()
     conn.close()
-
-
-crear_bd("prueba.sqlite3", "Tabla1.csv",
-         "Tabla2(IBEX35).csv", "Tabla3(SemanalesIBEX35).csv")
 
 
 def consulta1(db_filename, limite):
@@ -114,8 +88,6 @@ def consulta1(db_filename, limite):
     conn.close()
     return result
 
-# pprint(consulta1("prueba.sqlite3",-1))
-
 
 def consulta2(db_filename):
     
@@ -123,8 +95,9 @@ def consulta2(db_filename):
     cursor = conn.cursor()
 
     query = f"""
-            SELECT D.Ticker,D.Nombre,I.MAX 
-            FROM IBEX35 AS I JOIN Datos_generales AS D ON I.Ticker=D.Ticker 
+            SELECT D.Ticker,D.Nombre,MAX(I.Price)
+            FROM SemanalesIBEX35 AS I JOIN Datos_generales AS D ON I.Ticker=D.Ticker
+            GROUP BY D.Ticker 
             ORDER BY D.Nombre ASC
             """
     
@@ -133,21 +106,20 @@ def consulta2(db_filename):
     conn.close()
     return result
 
-#pprint(consulta2("prueba.sqlite3"))
 
 
 def consulta3(db_filename, limite):
    
-    conn = sqlite3.connect("prueba.sqlite3") 
+    conn = sqlite3.connect(db_filename) 
     cursor = conn.cursor()
-
+    #Se seleccionan una vez relacionadas las tablas,luego se busca los tickers que tienen el precio medio mayor al limite
     query = f"""
     SELECT S.Ticker, D.Nombre, AVG(S.Price) AS Media, MAX(S.Price) - MIN(S.Price) AS Diferencia
-    FROM {db_filename} AS S
+    FROM SemanalesIBEX35 AS S
     INNER JOIN Datos_generales AS D ON S.Ticker = D.Ticker 
     WHERE S.Ticker IN (
         SELECT Ticker
-        FROM {db_filename}
+        FROM SemanalesIBEX35
         GROUP BY Ticker
         HAVING AVG(Price) >= {limite}
     )
@@ -159,13 +131,14 @@ def consulta3(db_filename, limite):
     media_resultados = sorted(media_resultados, key=lambda x: x[2], reverse=True)
     return media_resultados
 
+
 def consulta4(db_filename, ticker):
-    conn = sqlite3.connect("prueba.sqlite3") 
+    conn = sqlite3.connect(db_filename) 
     cursor = conn.cursor()
 
     query = f'''
     SELECT Ticker, strftime('%Y-%m-%d', Fecha) as Fecha, Price
-    FROM {db_filename}
+    FROM SemanalesIBEX35
     WHERE Ticker = "{ticker}"
     ORDER BY Fecha DESC
     '''
@@ -176,7 +149,3 @@ def consulta4(db_filename, ticker):
     
     return result
     
-
-#print(consulta3("SemanalesIBEX35",10))
-
-#print(consulta4("SemanalesIBEX35","ANA"))
