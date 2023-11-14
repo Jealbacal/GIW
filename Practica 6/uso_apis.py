@@ -2,7 +2,7 @@
 TODO: rellenar
 
 Asignatura: GIW
-Práctica 5
+Práctica 6
 Grupo: XXXXXXX
 Autores: XXXXXX 
 
@@ -15,36 +15,32 @@ resultados de los demás.
 """
 
 
-URL = 'https://books.toscrape.com/'
+#Ejercicio 1
 
-
-# APARTADO 1 #
-def explora_categoria(url):
-    """ A partir de la URL de la página principal de una categoría, devuelve el nombre
-        de la categoría y el número de libros """
+def inserta_usuarios(datos, token):
     ...
 
+#Ejercicio 2
 
-def categorias():
-    """ Devuelve un conjunto de parejas (nombre, número libros) de todas las categorías """
+def get_ident_email(email, token):
     ...
 
+#Ejercicio 3
 
-# APARTADO 2 #
-def url_categoria(nombre):
-    """ Devuelve la URL de la página principal de una categoría a partir de su nombre (ignorar
-        espacios al principio y final y también diferencias en mayúsculas/minúsculas) """
+def borra_usuario(email, api_token):
     ...
 
+#Ejercicio 4
 
-def todas_las_paginas(url):
-    """ Sigue la paginación recopilando todas las URL *absolutas* atravesadas """
+def inserta_todo(email, token, title, due_on, status):
     ...
 
+#Ejercicio 5
 
-def libros_categoria(nombre):
-    """ Dado el nombre de una categoría, devuelve un conjunto de tuplas 
-        (titulo, precio, valoracion), donde el precio será un número real y la 
-        valoración un número natural """
+def lista_todos(email, token):
     ...
 
+#Ejercicio 6
+
+def lista_todos_no_cumplidos(email, token):
+    ...
