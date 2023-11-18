@@ -27,15 +27,17 @@ from datetime import datetime, timezone, timedelta
 
 #Ejercicio 1
 
-
 def inserta_usuarios(datos, token):
 
     for d in datos:
-        r = requests.post('https://gorest.co.in/public/v2/users',
-                    headers={'Authorization': f'Bearer {token}'},
-                    data = d
+        r = requests.post(GOREST_URL+USER_ENDPOINT, 
+                        headers={'Authorization': f'Bearer {token}'},
+                        data=d
                     )
-        if (r.status_code % 100 != 2): return False
+        pprint(r.status_code)
+        if (r.status_code / 100 != 2): 
+            pprint(r.json())
+            return False
 
     return True
 
@@ -59,7 +61,18 @@ def get_ident_email(email, token):
 #Ejercicio 3               
 
 def borra_usuario(email, api_token):
-    ...
+    id = get_ident_email(email,api_token)
+
+    if(id is None):
+        return "Cannot find id"
+    else:
+        r = requests.delete(f'https://gorest.co.in/public/v2/users/{id}',
+                    headers={'Authorization': f'Bearer {api_token}'})
+        
+        print(r.status_code)
+        if int(r.status_code/100) != 2: return False
+
+    return True
 
 #Ejercicio 4
 
@@ -87,7 +100,19 @@ def inserta_todo(email, token, title, due_on, status):
 #Ejercicio 5
 
 def lista_todos(email, token):
-    ...
+    
+    id=get_ident_email(email,token)
+
+    if id is None: return []
+    USER_TODO_ENDPOINT="/public/v2/users/{0}/todos".format(id)
+    r = requests.get(GOREST_URL+USER_TODO_ENDPOINT,
+                     params={'user_id' : id},
+                     headers={'Authorization': f'Bearer {token}'}
+                     )
+    
+    if (r.status_code / 100 != 2): return []
+    
+    return r.json()
 
 #Ejercicio 6
 
@@ -117,22 +142,29 @@ def lista_todos_no_cumplidos(email, token):
     return result
 
 # Testeo
-# with open('token_gorest.txt','r',encoding='utf8') as f:
-#     TOKEN_GOREST = f.read().strip()
-
-#     #Teste ej 1
-#     u1 = {'name': 'Eva', 'email': 'eva@gmail.com', 'gender': 'female', 'status': 'inactive'}
-#     u2 = {'name': 'Ana', 'email': 'ana@gmail.com', 'gender': 'female', 'status': 'active'}
-#     u3 = {'name': 'Pepe', 'email': 'pepe@gmail.com', 'gender': 'female', 'status': 'inactive'}
-
-#     print(inserta_usuarios([u1,u2], TOKEN_GOREST))
-#     print(inserta_usuarios([u2,u3], TOKEN_GOREST)
-
-with open('token_gorest.txt', 'r', encoding='utf8') as f:
+with open('token_gorest.txt','r',encoding='utf8') as f:
     TOKEN_GOREST = f.read().strip()
 
-USER="upendra_khan@hartmann.test"#para cambiar mas facil 
-pprint(get_ident_email(USER,TOKEN_GOREST))
-pprint(inserta_todo(USER,TOKEN_GOREST,"TODO NUEVO","2024-07-28 11:30","pending"))
-pprint(lista_todos_no_cumplidos(USER, TOKEN_GOREST))
+#Teste ej 1
+# print(borra_usuario("evaa@gmail.com", TOKEN_GOREST))
+# print(borra_usuario("anaa@gmail.com", TOKEN_GOREST))
+# print(borra_usuario("facu@gmail.com", TOKEN_GOREST))
+
+# u1 = {'name': 'Eva', 'email': 'evaa@gmail.com', 'gender': 'female', 'status': 'inactive'}
+# u2 = {'name': 'Ana', 'email': 'anaa@gmail.com', 'gender': 'female', 'status': 'active'}
+# u3 = {'name': 'Pepe', 'email': 'pepee@gmail.com', 'gender': 'female', 'status': 'inactive'}
+
+# print(inserta_usuarios([u1,u2], TOKEN_GOREST))
+#print(inserta_usuarios([u2,u3], TOKEN_GOREST))
+
+pprint(lista_todos("upendra_khan@hartmann.test",TOKEN_GOREST))
+
+
+#with open('token_gorest.txt', 'r', encoding='utf8') as f:
+#    TOKEN_GOREST = f.read().strip()
+
+# USER="upendra_khan@hartmann.test"#para cambiar mas facil 
+# pprint(get_ident_email(USER,TOKEN_GOREST))
+# pprint(inserta_todo(USER,TOKEN_GOREST,"TODO NUEVO","2024-07-28 11:30","pending"))
+# pprint(lista_todos_no_cumplidos(USER, TOKEN_GOREST))
 
