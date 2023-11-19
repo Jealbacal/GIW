@@ -169,7 +169,7 @@ def lista_todos_no_cumplidos(email, token):
 def testeo():
     with open('token_gorest.txt','r',encoding='utf8') as f:
         TOKEN_GOREST = f.read().strip()
-        
+
     #Ej1
     u1 = {'name': 'Eva', 'email': 'evaa@gmail.com', 'gender': 'female', 'status': 'inactive'}
     u2 = {'name': 'Ana', 'email': 'anaa@gmail.com', 'gender': 'female', 'status': 'active'}
@@ -187,8 +187,9 @@ def testeo():
     print(get_ident_email('pepee@gmail.com',TOKEN_GOREST))
 
     for i in range(10):
-        inserta_todo('evaa@gmail.com',TOKEN_GOREST,f"TODO {i}","2024-07-28 11:30","pending")
+        pprint(inserta_todo('evaa@gmail.com',TOKEN_GOREST,f"TODO {i}","2024-07-28 11:30","pending"))
 
-    lista_todos_no_cumplidos('evaa@gmail.com', TOKEN_GOREST)
+    pprint(lista_todos('evaa@gmail.com', TOKEN_GOREST))
+    pprint(lista_todos_no_cumplidos('evaa@gmail.com', TOKEN_GOREST))
 
 testeo()
