@@ -29,6 +29,7 @@ from datetime import datetime, timezone, timedelta
 
 def inserta_usuarios(datos, token):
 
+    sin_fallo = True
     for d in datos:
         r = requests.post(GOREST_URL+USER_ENDPOINT, 
                         headers={'Authorization': f'Bearer {token}'},
@@ -37,9 +38,9 @@ def inserta_usuarios(datos, token):
         pprint(r.status_code)
         if (r.status_code / 100 != 2): 
             pprint(r.json())
-            return False
+            sin_fallo = False
 
-    return True
+    return sin_fallo
 
 #Ejercicio 2
 
@@ -95,8 +96,6 @@ def inserta_todo(email, token, title, due_on, status):
         return False
     return True
 
-
-
 #Ejercicio 5
 
 def lista_todos(email, token):
@@ -142,8 +141,8 @@ def lista_todos_no_cumplidos(email, token):
     return result
 
 # Testeo
-with open('token_gorest.txt','r',encoding='utf8') as f:
-    TOKEN_GOREST = f.read().strip()
+# with open('token_gorest.txt','r',encoding='utf8') as f:
+#     TOKEN_GOREST = f.read().strip()
 
 #Teste ej 1
 # print(borra_usuario("evaa@gmail.com", TOKEN_GOREST))
@@ -157,8 +156,7 @@ with open('token_gorest.txt','r',encoding='utf8') as f:
 # print(inserta_usuarios([u1,u2], TOKEN_GOREST))
 #print(inserta_usuarios([u2,u3], TOKEN_GOREST))
 
-pprint(lista_todos("upendra_khan@hartmann.test",TOKEN_GOREST))
-
+#pprint(lista_todos("upendra_khan@hartmann.test",TOKEN_GOREST))
 
 #with open('token_gorest.txt', 'r', encoding='utf8') as f:
 #    TOKEN_GOREST = f.read().strip()
@@ -168,3 +166,29 @@ pprint(lista_todos("upendra_khan@hartmann.test",TOKEN_GOREST))
 # pprint(inserta_todo(USER,TOKEN_GOREST,"TODO NUEVO","2024-07-28 11:30","pending"))
 # pprint(lista_todos_no_cumplidos(USER, TOKEN_GOREST))
 
+def testeo():
+    with open('token_gorest.txt','r',encoding='utf8') as f:
+        TOKEN_GOREST = f.read().strip()
+        
+    #Ej1
+    u1 = {'name': 'Eva', 'email': 'evaa@gmail.com', 'gender': 'female', 'status': 'inactive'}
+    u2 = {'name': 'Ana', 'email': 'anaa@gmail.com', 'gender': 'female', 'status': 'active'}
+    u3 = {'name': 'Pepe', 'email': 'pepee@gmail.com', 'gender': 'female', 'status': 'inactive'}
+
+    inserta_usuarios([u1,u2], TOKEN_GOREST)
+    inserta_usuarios([u2,u3], TOKEN_GOREST)
+
+    print(get_ident_email('evaa@gmail.com',TOKEN_GOREST))
+    print(get_ident_email('anaa@gmail.com',TOKEN_GOREST))
+    print(get_ident_email('pepee@gmail.com',TOKEN_GOREST))
+
+    borra_usuario('pepee@gmail.com',TOKEN_GOREST)
+
+    print(get_ident_email('pepee@gmail.com',TOKEN_GOREST))
+
+    for i in range(10):
+        inserta_todo('evaa@gmail.com',TOKEN_GOREST,f"TODO {i}","2024-07-28 11:30","pending")
+
+    lista_todos_no_cumplidos('evaa@gmail.com', TOKEN_GOREST)
+
+testeo()
