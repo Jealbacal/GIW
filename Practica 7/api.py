@@ -115,7 +115,7 @@ def get_asignaturas():
     
 
 
-@app.route('asignaturas/<int:numero>', methods=['DELETE'])
+@app.route('/asignaturas/<int:numero>', methods=['DELETE'])
 def del_asignaturas(id):
     for asig in asignaturas_list:
         if asig.id == id:
@@ -123,7 +123,7 @@ def del_asignaturas(id):
             return '',204
     return '',404
 
-@app.route('asignaturas/<int:numero>', methods=['GET'])
+@app.route('/asignaturas/<int:numero>', methods=['GET'])
 def datos_asig(id):
     for asig in asignaturas_list:
         if asig.id == id:
@@ -134,7 +134,7 @@ def datos_asig(id):
         
     return '',404
 
-@app.route('asignaturas/<int:numero>', methods=['PUT'])
+@app.route('/asignaturas/<int:numero>', methods=['PUT'])
 def reemplaza_asig(id):
 
     data = request.get_json()
@@ -152,7 +152,7 @@ def reemplaza_asig(id):
         
     return '', 404 #not found
 
-@app.route('asignaturas/<int:numero>', methods=['PATCH'])
+@app.route('/asignaturas/<int:numero>', methods=['PATCH'])
 def actualiza_asig(id):
 
     data = request.get_json()
@@ -174,6 +174,14 @@ def actualiza_asig(id):
     
     return '',404
     
+@app.route('/asignaturas/<int:numero>/horario',methods=['GET'])
+def gethorarios(id):
+    
+    for asig in asignaturas_list:
+        if asig.id == id:
+            return {"horario": asig.horario}, 200
+        
+    return '',404
 
 
 if __name__ == '__main__':
