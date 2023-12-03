@@ -40,20 +40,32 @@ def esvalido(asig):#comprobacion de json en parametro
     
     if "nombre" in asig and "numero_alumnos" in asig and "horario" in asig\
     and isinstance(asig["nombre"],str) and isinstance(asig["numero_alumnos"],int)\
-    and isinstance(asig["horario"],list):
+    and isinstance(asig["horario"],list) and (len(asig) == 3):
            
         for a in asig["horario"]:
-            if isinstance(a,dict):
-                if ("dia" in a and "horario_inicio" in a and "hora_final" in a\
-                and isinstance(a["dia"],str) and isinstance(a["horario_inicio"],int)\
-                and isinstance(a["hora_final"],int)) or len(a)==0:
-                    return True
-                else:
-                    return False
+            if not isinstance(a,dict): return False
+            if not len(a) == 0:
+                # ----- Claves en dicc y tipo de datos de los valores -----
+                if not ("dia" in a and "hora_inicio" in a and "hora_final" in a\
+                    and isinstance(a["dia"],str) and isinstance(a["hora_inicio"],int)\
+                    and isinstance(a["hora_final"],int) and (len(a) == 3)): 
+                        print("shit")
+                        return False
+
+            #     if ("dia" in a and "horario_inicio" in a and "hora_final" in a\
+            #     and isinstance(a["dia"],str) and isinstance(a["horario_inicio"],int)\
+            #     and isinstance(a["hora_final"],int)) or len(a)==0:
+            #         return True
+            #     else:
+            #         return False
                     
-            else:
-                return False
-            
+            # else:
+            #     return False
+        
+    
+    else: return False
+
+    return True
             
 @app.route('/asignaturas', methods=['POST'])
 
@@ -94,6 +106,7 @@ def get_asignaturas():
     
     
     if alumnos_gte and page and per_page:#existen las tres
+        cont = 0
         processed=0
         for asig in asignaturas_list:
             if(asig.numero_alumnos>alumnos_gte):
@@ -102,6 +115,10 @@ def get_asignaturas():
                     break
                 if(processed>(page-1)*per_page):
                     asignaturas_data.append(f"/asignatura/{asig.id}")
+                    cont += 1
+
+        if cont < per_page:
+            return jsonify({'asignaturas': asignaturas_data}), 206
                
         # 10 elem 7 apto
         # page 2 per page 3
@@ -119,12 +136,16 @@ def get_asignaturas():
     
         
     if page and per_page: #existen solo estas dos
+        cont = 0
         if page*per_page>len(asignaturas_list):
             return '',404#esta fuera de index
         for asig in asignaturas_list[(page-1)*per_page:(page*per_page)]:
             asignaturas_data.append(f"asignatura/{asig.id}")
+            cont += 1
+            if cont < per_page:
+                return jsonify({'asignaturas': asignaturas_data}), 206      
               
-        return jsonify({'asignaturas': asignaturas_data})#default devuelve 200
+        return jsonify({'asignaturas': asignaturas_data}) #default devuelve 200
     
     
     else: #bad request no cumple con page&per_page 
@@ -132,7 +153,7 @@ def get_asignaturas():
     
 
 
-@app.route('/asignaturas/<int:numero>', methods=['DELETE'])
+@app.route('/asignaturas/<int:id>', methods=['DELETE'])
 def del_asignaturas(id):
     for asig in asignaturas_list:
         if asig.id == id:
@@ -140,26 +161,27 @@ def del_asignaturas(id):
             return '',204
     return '',404
 
-@app.route('/asignaturas/<int:numero>', methods=['GET'])
+@app.route('/asignaturas/<int:id>', methods=['GET'])
 def datos_asig(id):
     for asig in asignaturas_list:
         if asig.id == id:
-            return {"id": asig.id,
+            return jsonify({"horario": asig.horario,
+                    "id": asig.id,
                     "nombre": asig.nombre,
-                    "numero_alumnos": asig.numero_alumnos,
-                    "horario": asig.horario}, 200
+                    "numero_alumnos": asig.numero_alumnos
+                    }), 200
         
     return '',404
 
-@app.route('/asignaturas/<int:numero>', methods=['PUT'])
+@app.route('/asignaturas/<int:id>', methods=['PUT'])
 def reemplaza_asig(id):
 
-    data = request.get_json()
-    if esvalido(data)==False:
-        return '',400 #bad request
-    
     for asig in asignaturas_list:
         if asig.id == id:
+
+            data = request.get_json()
+            if esvalido(data)==False:
+                return '',400 #bad request
 
             asig.nombre = data["nombre"]
             asig.numero_alumnos=data["numero_alumnos"]
@@ -169,16 +191,17 @@ def reemplaza_asig(id):
         
     return '', 404 #not found
 
-@app.route('/asignaturas/<int:numero>', methods=['PATCH'])
+@app.route('/asignaturas/<int:id>', methods=['PATCH'])
 def actualiza_asig(id):
-
-    data = request.get_json()
-    if len(data) > 1: return '',400
-    key = list(data.keys())[0]
-    if key not in ["nombre" , "numero_alumnos", "horario"]: return '',400 #bad request
 
     for asig in asignaturas_list:
         if asig.id == id:
+
+            data = request.get_json()
+            if len(data) != 1: return '',400
+            key = list(data.keys()).pop()
+            if key not in ["nombre" , "numero_alumnos", "horario"]: return '',400 #bad request
+
             if (key == "nombre") and isinstance(data[key],str):
                 asig.nombre = data["nombre"]
                 return '',200 #ok
@@ -191,7 +214,7 @@ def actualiza_asig(id):
     
     return '',404
     
-@app.route('/asignaturas/<int:numero>/horario',methods=['GET'])
+@app.route('/asignaturas/<int:id>/horario',methods=['GET'])
 def gethorarios(id):
     
     for asig in asignaturas_list:
