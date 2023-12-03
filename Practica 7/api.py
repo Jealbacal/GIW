@@ -34,9 +34,26 @@ def delete_asignaturas():
 
 
 def esvalido(asig):#comprobacion de json en parametro
-    return "nombre" in asig and "numero_alumnos" in asig and "horario" in asig\
-            and isinstance(asig["nombre"],str) and isinstance(asig["numero_alumnos"],int)\
-            and isinstance(asig["horario"],list)
+    # return "nombre" in asig and "numero_alumnos" in asig and "horario" in asig\
+    #         and isinstance(asig["nombre"],str) and isinstance(asig["numero_alumnos"],int)\
+    #         and isinstance(asig["horario"],list)
+    
+    if "nombre" in asig and "numero_alumnos" in asig and "horario" in asig\
+    and isinstance(asig["nombre"],str) and isinstance(asig["numero_alumnos"],int)\
+    and isinstance(asig["horario"],list):
+           
+        for a in asig["horario"]:
+            if isinstance(a,dict):
+                if ("dia" in a and "horario_inicio" in a and "hora_final" in a\
+                and isinstance(a["dia"],str) and isinstance(a["horario_inicio"],int)\
+                and isinstance(a["hora_final"],int)) or len(a)==0:
+                    return True
+                else:
+                    return False
+                    
+            else:
+                return False
+            
             
 @app.route('/asignaturas', methods=['POST'])
 
