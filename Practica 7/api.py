@@ -90,7 +90,7 @@ def get_asignaturas():
         # page 2 per page 3
         # 0 1 2 3 4 5 6 7 8 9 10
         # 0 2 4 6 8 9 10 apto
-        #return 6 8 9
+        # return 6 8 9
         return jsonify({'asignaturas': asignaturas_data})#default devuelve 200
     
     
@@ -113,6 +113,68 @@ def get_asignaturas():
     else: #bad request no cumple con page&per_page 
         return '',400
     
+
+
+@app.route('asignaturas/<int:numero>', methods=['DELETE'])
+def del_asignaturas(id):
+    for asig in asignaturas_list:
+        if asig.id == id:
+            asignaturas_list.remove(asig)
+            return '',204
+    return '',404
+
+@app.route('asignaturas/<int:numero>', methods=['GET'])
+def datos_asig(id):
+    for asig in asignaturas_list:
+        if asig.id == id:
+            return {"id": asig.id,
+                    "nombre": asig.nombre,
+                    "numero_alumnos": asig.numero_alumnos,
+                    "horario": asig.horario}, 200
+        
+    return '',404
+
+@app.route('asignaturas/<int:numero>', methods=['PUT'])
+def reemplaza_asig(id):
+
+    data = request.get_json()
+    if esvalido(data)==False:
+        return '',400 #bad request
+    
+    for asig in asignaturas_list:
+        if asig.id == id:
+
+            asig.nombre = data["nombre"]
+            asig.numero_alumnos=data["numero_alumnos"]
+            asig.horario = data["horario"]
+
+            return '',200 #ok
+        
+    return '', 404 #not found
+
+@app.route('asignaturas/<int:numero>', methods=['PATCH'])
+def actualiza_asig(id):
+
+    data = request.get_json()
+    if len(data) > 1: return '',400
+    key = list(data.keys())[0]
+    if key not in ["nombre" , "numero_alumnos", "horario"]: return '',400 #bad request
+
+    for asig in asignaturas_list:
+        if asig.id == id:
+            if (key == "nombre") and isinstance(data[key],str):
+                asig.nombre = data["nombre"]
+                return '',200 #ok
+            if (key == "numero_alumnos") and isinstance(data[key],int):
+                asig.numero_alumnos = data["numero_alumnos"]
+                return '',200 #ok
+            if (key == "horario") and isinstance(data[key],list):
+                asig.horario = data["horario"]
+                return '',200 #ok
+    
+    return '',404
+    
+
 
 if __name__ == '__main__':
     app.config.from_object(FlaskConfig())
