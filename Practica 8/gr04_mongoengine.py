@@ -14,15 +14,17 @@ class Tarjeta(Document):
     ccv=StringField(required=True,min_length=3,max_length=3)
     
     def clean(self):
-        if not self.numero.isdigit():
-             raise ValidationError(f'{self.numero} must contain only numeric digits.')
-        if not self.mes.isdigit():
-             raise ValidationError(f'{self.mes} must contain only numeric digits.')
-        if not self.año.isdigit():
-             raise ValidationError(f'{self.año} must contain only numeric digits.')
-        if not self.ccv.isdigit():
-             raise ValidationError(f'{self.ccv} must contain only numeric digits.')
-       
+        try:
+            if not self.numero.isdigit():
+                raise ValidationError(f'{self.numero} must contain only numeric digits.')
+            if not self.mes.isdigit():
+                raise ValidationError(f'{self.mes} must contain only numeric digits.')
+            if not self.año.isdigit():
+                raise ValidationError(f'{self.año} must contain only numeric digits.')
+            if not self.ccv.isdigit():
+                raise ValidationError(f'{self.ccv} must contain only numeric digits.')
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
         
         
@@ -37,8 +39,13 @@ class Producto(Document):
             raise ValidationError(f'{self.codigo_barras} must contain only numeric digits.')
         # if self.categoria_principal <= 0:
         #     raise ValidationError(f'{self.categoria_principal} must be a natural number')
-        if any(num < 0 for num in self.categorias_secundarias):
-            raise ValidationError("Numbers in categoria secundaria must be natural numbers")
+
+        try:
+            if any(num < 0 for num in self.categorias_secundarias):
+                raise ValidationError("Numbers in categoria secundaria must be natural numbers")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
         #comprobar ean13
        
         suma=0
@@ -58,21 +65,33 @@ class Producto(Document):
             
 class Linea(Document):
     num_items=IntField(required=True,min_value= 1)
-    precio_item=FloatField(required=True,min_value= 0)
+    precio_item=FloatField(required=True,min_value= 1)
     nombre_item=StringField(required=True,min_length=2)
     total=FloatField(required=True,min_value= 0)
     ref=ReferenceField(Producto,reverse_delete_rule="CASCADE",required=True)
     
     def clean(self):
+
+        try:
+            if self.num_items * self.precio_item != self.total:#comprobacion de total
+                raise ValidationError(f'total:{self.total} no coincide con total calculado:{self.num_items*self.precio_item}')   
+            
+            
+            name=self.ref.nombre
+            if self.ref.nombre != self.nombre_item:#comprobacion de nombre
+                raise ValidationError(f'ref:{self.nombre_item} no coincide con nombre producto:{name}') 
+            
+            if not self.precio_item > 0 :#comprobacion de nombre
+                raise ValidationError(f'ref:{self.nombre_item} un producto no puede valor 0:{name}')  
+            
+
         
-        calc=self.num_items*self.precio_item     
-        if self.total!=calc:#comprobacion de total
-            raise ValidationError(f'total:{self.total} no coincide con total calculado:{calc}')   
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+          
         
-        name=self.ref.nombre
-        if self.ref.nombre!=self.nombre_item:#comprobacion de nombre
-            raise ValidationError(f'ref:{self.nombre_item} no coincide con nombre producto:{type(name)}')   
-        
+         
         
 class Pedido(Document):
     total=FloatField(required=True)
@@ -89,10 +108,6 @@ class Pedido(Document):
                  raise ValidationError(f'la suma de los pedidos no coincide con el total, suma:{suma}, total:{self.total}')
         except Exception as e:
             print(f"An error occurred: {e}")
-        try:
-            datetime.strptime(self.fecha, "%Y,%m,%d,%H,%M,%S,%f")
-        except ValueError:
-            raise ValidationError(f'{self.fecha} must be in the format AAAA,MM,DD,HH,MM,SS,NNNNNN')
         try:
             lista=set()
             for l in self.lineas:
