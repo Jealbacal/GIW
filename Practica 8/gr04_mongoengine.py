@@ -29,15 +29,15 @@ class Tarjeta(Document):
 class Producto(Document):
     codigo_barras = StringField(required=True,unique=True,min_length=13, max_length=13)#13 digitos
     nombre = StringField(required=True, min_length=2)
-    categoria_principal = IntField(required=True)
+    categoria_principal = IntField(required=True, min_value=0)
     categorias_secundarias = ListField(IntField())#opcional
     
     def clean(self):
         if not self.codigo_barras.isdigit():
             raise ValidationError(f'{self.codigo_barras} must contain only numeric digits.')
-        if self.categoria_principal <= 0:
-            raise ValidationError(f'{self.categoria_principal} must be a natural number')
-        if any(num < 0 for num in self.categoria_secundaria):
+        # if self.categoria_principal <= 0:
+        #     raise ValidationError(f'{self.categoria_principal} must be a natural number')
+        if any(num < 0 for num in self.categorias_secundarias):
             raise ValidationError("Numbers in categoria secundaria must be natural numbers")
         #comprobar ean13
        
@@ -57,20 +57,13 @@ class Producto(Document):
      
             
 class Linea(Document):
-    num_items=IntField(required=True,min_value= 0)
+    num_items=IntField(required=True,min_value= 1)
     precio_item=FloatField(required=True,min_value= 0)
     nombre_item=StringField(required=True,min_length=2)
     total=FloatField(required=True,min_value= 0)
     ref=ReferenceField(Producto,reverse_delete_rule="CASCADE",required=True)
     
     def clean(self):
-       
-        # if self.num_items <=0:
-        #     raise ValidationError(f'{self.num_items}must be a natural number')
-        # if self.precio_item <=0:
-        #     raise ValidationError(f'{self.precio_item} must a positive number')
-        # if self.total <=0:
-        #     raise ValidationError(f'{self.total} must a positive number') 
         
         calc=self.num_items*self.precio_item     
         if self.total!=calc:#comprobacion de total
@@ -119,7 +112,7 @@ class Usuario(Document):
         nombre=StringField(required=True,min_length=2)
         apellido1=StringField(required=True,min_length=2)
         apellido2=StringField()#opcional
-        f_nac=StringField(required=True)
+        f_nac=StringField(required=True, regex=r'^\d{4}-\d{2}-\d{2}$')
         tarjetas = ListField(ReferenceField(Tarjeta),reverse_delete_rule="CASCADE")#opcional
         pedidos= ListField(ReferenceField(Pedido),reverse_delete_rule="CASCADE")
         
@@ -130,10 +123,9 @@ class Usuario(Document):
             if self.dni[8].upper() != letras_dni[num % 23]: #comprueba la letra de control
                     raise ValidationError('La letra de control del DNI no es correcta')
           
-            try:
-                datetime.strptime(self.f_nac, "%Y-%m-%d")
-            except ValueError:
-                raise ValidationError(f'{self.f_nac} must be in the format AAAA-MM-DD')
+            
+            
+            
             
         
 # disconnect()      
