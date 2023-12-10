@@ -12,7 +12,7 @@ $ python -m unittest tests.TestPersistencia.test_usuarios_validos
 import unittest
 from mongoengine.errors import ValidationError
 from mongoengine import connect
-from grXX_mongoengine import Producto, Linea, Pedido, Tarjeta, Usuario
+from gr04_mongoengine import Producto, Linea, Pedido, Tarjeta, Usuario
 import inspect
 
 
