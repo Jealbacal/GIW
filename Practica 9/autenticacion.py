@@ -23,8 +23,8 @@ from hashlib import sha256
 import argon2
 from argon2 import PasswordHasher
 import pyotp
-import qrcode
-import io
+import base64
+from flask_qrcode import QRcode
 
 
 PIMIENTA = b'SalPimentarAlGusto'
@@ -172,36 +172,35 @@ def signup_totp():
     totp = pyotp.TOTP(secret_b32)
     totp.now()
 
-    url = pyotp.utils.build_uri(totp,nombre,None,"localhost","base32",6,10000,None)
-    img_path = f"qr{nombre}.png"
-    
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-
-    qr.add_data(url)
-    qr.make(fit=True)
-
-    img = qr.make_image(fill_color="black", back_color="white")
-    img.save(img_path)
-    
-    img_byte_array = io.BytesIO()
-    img.save(img_byte_array)
-    img_byte_array.seek(0)
-
-    usuario=User(user_id=nombre,full_name=nombreC,country=pais,email=mail,passwd=hash_pssw,totp_secret=secret_b32)
+    usuario=User(user_id=nombre,full_name=nombreC,country=pais,email=mail,passwd=hash_pssw)
     usuario.save()
 
-    response = make_response(send_file(img_path, mimetype='image/png'))
+    url = pyotp.utils.build_uri(totp,nombre,None,"localhost","base32",6,10000,None)
+    # img_path = f"qr{nombre}.png"
+    
+    # qr = qrcode.QRCode(
+    #     version=1,
+    #     error_correction=qrcode.constants.ERROR_CORRECT_L,
+    #     box_size=10,
+    #     border=4,
+    # )
 
-    response.headers["Custom-String"] = f"Bienvenido {nombre}, tu secreto es: {secret_b32}"
+    # qr.add_data(url)
+    # qr.make(fit=True)
 
-    send_file(img_byte_array, mimetype='image/png')
+    # img = qr.make_image(fill_color="black", back_color="white")
 
-    return response
+    # img_bytes = img.get_image().tobytes()
+
+    # img_64 = base64.b64encode(img_bytes).decode('utf-8')
+
+    #<img src="data:image/jpeg;base64,{{ base64_image }}" alt="Imagen">
+    
+    # return f"<img src=\"data:image/png;base64,{ img_64 }\"></img>"
+
+    return f"<img src=\"{{QRcode(url)}}\">"
+
+
 
 @app.route('/login_totp', methods=['POST'])
 def login_totp():
@@ -222,7 +221,7 @@ class FlaskConfig:
 
 if __name__ == '__main__':
     app.config.from_object(FlaskConfig())
-    
+    QRcode(app)
     db = User._get_db()
     collections = db.list_collection_names()
     for collection in collections:
