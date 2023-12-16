@@ -122,6 +122,8 @@ def change_password():
     user = User.objects(user_id=nombre).first()
     if user is None or user.passwd != hash_pssw:
         return "Usuario o contraseña incorrecto"
+    user.passwd = new_passwd # BORRAR LUEGO, ¡acordarse de actualizar la contrasena!
+    user.save()
     return f"La contraseña de {nombre} ha sido cambiado"
  
            
@@ -170,15 +172,13 @@ def signup_totp():
     #hash_pssw="abc123"#a mi no me va el argon
     secret_b32 = pyotp.random_base32()
 
-    totp = pyotp.TOTP(secret_b32)
-    totp.now()
-
     usuario=User(user_id=nombre,full_name=nombreC,country=pais,email=mail,passwd=hash_pssw)
     usuario.save()
 
-    url = pyotp.utils.build_uri(totp,nombre,None,"localhost","base32",6,10000,None)
-    
-    # Generate QR code
+    url = pyotp.utils.build_uri(secret_b32,nombre,None,"localhost","base32",6,10000,None)
+    # url = pyotp.utils.build_uri(secret_b32,nombre) # sin parametros opcionalwes
+
+    # Codigo QR
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -189,12 +189,17 @@ def signup_totp():
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
 
+    #SOL felipe render template---------------------------------------------------------------------
+
     # Save the QR code image (optional)
     img.save(os.path.join("static", 'qr_image.png'))
 
     # Render the template with the QR code
     return render_template('qr.html', qr_code='qr_image.png',username=nombre, secreto=secret_b32)
 
+    #-----------------------------------------------------------------------------------------------
+    
+    #Sol JJ base64----------------------------------------------------------------------------------
     # img_path = f"codigos/qr{nombre}.png"
 
     # img.save(img_path)
@@ -206,11 +211,26 @@ def signup_totp():
 
     # return f"Bienvenido {nombre}, tu secreto es: {secret_b32} <br><img src=\"data:image/png;base64,{img_64}\"/>"
 
+    #------------------------------------------------------------------------------------------------
 
 
 @app.route('/login_totp', methods=['POST'])
 def login_totp():
-    ...
+
+    nombre=request.form.get("nickname")
+    pssw=request.form.get("password")
+    totp_user=request.form.get("totp")
+    
+    hash_pssw=hashpassArgon(pssw)
+    
+    user = User.objects(user_id=nombre).first()
+
+    totp = pyotp.TOTP(user.totp_secret)
+    totp.now()
+
+    if user is None or user.passwd != hash_pssw or totp.verify(totp_user):
+        return "Usuario o contraseña incorrecto"
+    return f"Bienvenido {nombre}"
   
 
 class FlaskConfig:
