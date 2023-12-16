@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+</head>
+<body>
+    <p>Bienvenido {{ username }} tu secreto es: {{ secreto }}</p>
+    <img src="{{ url_for('static', filename=qr_code) }}" alt="Facebook QR Code">
+</body>
+</html>
