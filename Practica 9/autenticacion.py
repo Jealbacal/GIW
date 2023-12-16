@@ -22,9 +22,10 @@ from hashlib import sha256
 # Resto de importaciones
 import argon2
 from argon2 import PasswordHasher
+import os
 import pyotp
 import base64
-from flask_qrcode import QRcode
+import qrcode
 
 
 PIMIENTA = b'SalPimentarAlGusto'
@@ -165,8 +166,8 @@ def signup_totp():
     if nombre in usernames:
         return "El usuario ya existe"
     
-    hash_pssw=hashpassArgon(pssw)
-
+    #hash_pssw=hashpassArgon(pssw)
+    hash_pssw="abc123"#a mi no me va el argon
     secret_b32 = pyotp.random_base32()
 
     totp = pyotp.TOTP(secret_b32)
@@ -176,29 +177,25 @@ def signup_totp():
     usuario.save()
 
     url = pyotp.utils.build_uri(totp,nombre,None,"localhost","base32",6,10000,None)
-    # img_path = f"qr{nombre}.png"
     
-    # qr = qrcode.QRCode(
-    #     version=1,
-    #     error_correction=qrcode.constants.ERROR_CORRECT_L,
-    #     box_size=10,
-    #     border=4,
-    # )
+    # Generate QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
 
-    # qr.add_data(url)
-    # qr.make(fit=True)
+    # Save the QR code image (optional)
+    img.save(os.path.join("static", 'qr_image.png'))
 
-    # img = qr.make_image(fill_color="black", back_color="white")
+    # Render the template with the QR code
+    return render_template('qr.html', qr_code='qr_image.png',username=nombre, secreto=secret_b32)
 
-    # img_bytes = img.get_image().tobytes()
 
-    # img_64 = base64.b64encode(img_bytes).decode('utf-8')
-
-    #<img src="data:image/jpeg;base64,{{ base64_image }}" alt="Imagen">
-    
-    # return f"<img src=\"data:image/png;base64,{ img_64 }\"></img>"
-
-    return f"<img src=\"{{QRcode(url)}}\">"
 
 
 
@@ -221,7 +218,7 @@ class FlaskConfig:
 
 if __name__ == '__main__':
     app.config.from_object(FlaskConfig())
-    QRcode(app)
+  
     db = User._get_db()
     collections = db.list_collection_names()
     for collection in collections:
