@@ -166,8 +166,8 @@ def signup_totp():
     if nombre in usernames:
         return "El usuario ya existe"
     
-    #hash_pssw=hashpassArgon(pssw)
-    hash_pssw="abc123"#a mi no me va el argon
+    hash_pssw=hashpassArgon(pssw)
+    #hash_pssw="abc123"#a mi no me va el argon
     secret_b32 = pyotp.random_base32()
 
     totp = pyotp.TOTP(secret_b32)
@@ -195,7 +195,16 @@ def signup_totp():
     # Render the template with the QR code
     return render_template('qr.html', qr_code='qr_image.png',username=nombre, secreto=secret_b32)
 
+    # img_path = f"codigos/qr{nombre}.png"
 
+    # img.save(img_path)
+
+    # with open(img_path, 'rb') as img_file:
+    #     img_data = img_file.read()
+
+    # img_64 = base64.b64encode(img_data).decode('utf-8')
+
+    # return f"Bienvenido {nombre}, tu secreto es: {secret_b32} <br><img src=\"data:image/png;base64,{img_64}\"/>"
 
 
 
