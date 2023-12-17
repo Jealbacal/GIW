@@ -186,11 +186,11 @@ def signup_totp():
     #hash_pssw="abc123"#a mi no me va el argon
     secret_b32 = pyotp.random_base32()
 
-    usuario=User(user_id=nombre,full_name=nombreC,country=pais,email=mail,passwd=hash_pssw)
+    usuario=User(user_id=nombre,full_name=nombreC,country=pais,email=mail,passwd=hash_pssw,totp_secret=secret_b32)
     usuario.save()
 
-    url = pyotp.utils.build_uri(secret_b32,nombre,None,"localhost","base32",6,10000,None)
-    # url = pyotp.utils.build_uri(secret_b32,nombre) # sin parametros opcionalwes
+    # url = pyotp.utils.build_uri(secret_b32,nombre,None,"localhost","base32",6,10000,None)
+    url = pyotp.utils.build_uri(secret_b32,nombre) # sin parametros opcionalwes
 
     # Codigo QR
     qr = qrcode.QRCode(
@@ -245,10 +245,12 @@ def login_totp():
         return "Usuario o contraseña incorrecto"
 
     totp = pyotp.TOTP(user.totp_secret)
-    totp.now()
+    current_totp = totp.now()
 
-    if user is None or not totp.verify(totp_user):
+    if user is None:
         return "Usuario o contraseña incorrecto"
+    if not totp.verify(totp_user):
+        return f"totp mal, el totp es: {current_totp}"
     return f"Bienvenido {nombre}"
   
 
