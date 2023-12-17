@@ -1,10 +1,11 @@
 """
-TODO: rellenar
-
 Asignatura: GIW
-Práctica X
-Grupo: XXXXXXX
-Autores: XXXXXX 
+Práctica 9
+Grupo: 04
+Autores:Jesús Alberto Barrios Caballero
+        José Javier Carrasco Ferri
+        Enrique Martín Rodríguez
+        Felipe Ye Chen
 
 Declaramos que esta solución es fruto exclusivamente de nuestro trabajo personal. No hemos
 sido ayudados por ninguna otra persona o sistema automático ni hemos obtenido la solución
@@ -20,7 +21,7 @@ from mongoengine import connect, Document, StringField, EmailField
 from os import urandom
 from hashlib import sha256
 # Resto de importaciones
-import argon2
+from argon2.exceptions import VerifyMismatchError
 from argon2 import PasswordHasher
 import os
 import pyotp
@@ -50,8 +51,9 @@ def hashpass(pssw):
     
 def hashpassArgon(pssw):
     ph = PasswordHasher(**options)
-    hash_passwd = ph.hash(pssw)
+    hash_passwd = ph.hash(pssw + PIMIENTA)
     return hash_passwd
+
     
 
 # Clase para almacenar usuarios usando mongoengine
@@ -78,7 +80,7 @@ class User(Document):
 #
 #     - Almaceniamiento del hash de la contraseña, haciendo inviable la obtencion del texto plano
 #     - Uso de sal para el calculo de del hash, haciendo que usuarios con la misma clave tengan distinto hash
-#     - Uso de pimienta, añadiendo una capa extra de seguridad por si se filtran las contraseñas
+#     - Uso de pimienta, añadiendo una capa extra de seguridad con un secreto propio por si se filtran las contraseñas
 #     - Uso del ralentizado, para hacer inviables los ataques por fuerza bruta
 
 @app.route('/signup', methods=['POST'])
@@ -117,12 +119,18 @@ def change_password():
     old_passwd=request.form.get("old_password")
     new_passwd=request.form.get("new_password")
     
-    hash_pssw=hashpassArgon(old_passwd)
+    hasher = PasswordHasher(**options)
     
     user = User.objects(user_id=nombre).first()
-    if user is None or user.passwd != hash_pssw:
+
+    try:
+        hasher.verify(user.passwd, old_passwd + PIMIENTA)
+    except VerifyMismatchError:
         return "Usuario o contraseña incorrecto"
-    user.passwd = new_passwd # BORRAR LUEGO, ¡acordarse de actualizar la contrasena!
+
+    if user is None:
+        return "Usuario o contraseña incorrecto"
+    user.passwd = hashpassArgon(new_passwd) # BORRAR COMMENT LUEGO, ¡acordarse de actualizar la contrasena!
     user.save()
     return f"La contraseña de {nombre} ha sido cambiado"
  
@@ -132,11 +140,17 @@ def login():
     
     nombre=request.form.get("nickname")
     pssw=request.form.get("password")
-    
-    hash_pssw=hashpassArgon(pssw)
+
+    hasher = PasswordHasher(**options)
     
     user = User.objects(user_id=nombre).first()
-    if user is None or user.passwd != hash_pssw:
+
+    try:
+        hasher.verify(user.passwd, pssw + PIMIENTA)
+    except VerifyMismatchError:
+        return "Usuario o contraseña incorrecto"
+
+    if user is None:
         return "Usuario o contraseña incorrecto"
     return f"Bienvenido {nombre}"
     
@@ -192,7 +206,7 @@ def signup_totp():
     #SOL felipe render template---------------------------------------------------------------------
 
     # Save the QR code image (optional)
-    img.save(os.path.join("static", 'qr_image.png'))
+    img.save(os.path.join("static", f'qr_image_{nombre}.png'))
 
     # Render the template with the QR code
     return render_template('qr.html', qr_code='qr_image.png',username=nombre, secreto=secret_b32)
@@ -221,14 +235,19 @@ def login_totp():
     pssw=request.form.get("password")
     totp_user=request.form.get("totp")
     
-    hash_pssw=hashpassArgon(pssw)
+    hasher = PasswordHasher(**options)
     
     user = User.objects(user_id=nombre).first()
+
+    try:
+        hasher.verify(user.passwd, pssw + PIMIENTA)
+    except VerifyMismatchError:
+        return "Usuario o contraseña incorrecto"
 
     totp = pyotp.TOTP(user.totp_secret)
     totp.now()
 
-    if user is None or user.passwd != hash_pssw or totp.verify(totp_user):
+    if user is None or not totp.verify(totp_user):
         return "Usuario o contraseña incorrecto"
     return f"Bienvenido {nombre}"
   
