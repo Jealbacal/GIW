@@ -29,7 +29,7 @@ import base64
 import qrcode
 
 
-PIMIENTA = b'SalPimentarAlGusto'
+PIMIENTA = f'SalPimentarAlGusto'
 
 # Opciones argon2
 options = {
