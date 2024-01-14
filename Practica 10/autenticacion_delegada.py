@@ -26,8 +26,7 @@ app = Flask(__name__)
 
 
 # Credenciales
-CLIENT_ID = '975211704103-er0fm5sk122t5oogcbsdesa0rgf5o9ur.apps.googleusercontent.com'
-CLIENT_SECRET = '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'
+
 
 REDIRECT_URI = 'http://localhost:5000/token'
 
