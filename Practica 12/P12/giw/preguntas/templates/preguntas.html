@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}
+Preguntas
+{% endblock %}
+{% block content %}
+<ul>
+{% for pregunta in preguntas %}
+    <li> <a href="preguntas/{{preguntas.id}}">{{pregunta.titulo}}</a> -- {{pregunta.autor.nombre}} --
+        {{pregunta.fecha}}
+    </li>
+{% endfor %}
+</ul>
+{% if form %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Enviar</button>
+    </form>
+{% endif %}
+{% endblock %}
+\end{lstlisting}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}
+Opiniones
+{% endblock %}
+{% block content %}
+<ul>
+{% for opinion in opiniones %}
+    <li>{{opinion.texto}} -- {{opinion.autor.first_name}} ({{opinion.autor.username}})<br/>
+        {{opinion.fecha}}
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}TITULO{% endblock %}
+    </title>
+</head>
+<body>
+<h1>Opiniones de la exposición</h1>
+<p>
+{% if request.user.username %}
+<a href="{% url 'opiniones:nueva_opinion' %}"><button type="button">Añadir opinión</button></a>
+<a href="{% url 'opiniones:logout' %}"><button type="button">Salir</button></a>
+{% else %}
+<a href="{% url 'opiniones:login' %}"><button type="button">Acceder</button></a>
+{% endif %}
+</p>
+{% if request.user.username %}
+<p>Bienvenido {{request.user.username}}</p>
+{% endif %}
+{% block content %}
+CONTENIDO
+{% endblock %}
+</body>
+</html>
