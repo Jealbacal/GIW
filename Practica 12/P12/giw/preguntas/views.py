@@ -64,26 +64,37 @@ def preguntas(request):
         form = PreguntaForm() if request.user.is_authenticated else None
         return render(request, "index.html", {'preguntas': todas_preguntas, 'form': form})
 
-@require_http_methods(["GET"]) # no se puede hacer post porque no hay formulario
+@require_http_methods(["GET", "POST"])
 @login_required(login_url='preguntas:login') # si no esta logueado, redirige a la pagina de login
 def pregunta(request, question_id): # question_id es el id de la pregunta
     """Muestra la pregunta (GET)"""
-    pregunta = Pregunta.objects.get(id=question_id) # obtiene la pregunta con el id
-    respuestas = Respuesta.objects.filter(pregunta=pregunta).order_by('-fecha_publicacion')
-    return render(request, "pregunta.html", {'pregunta': pregunta, 'respuestas': respuestas})
+    if request.method == "POST":
+        form = RespuestaForm(request.POST)
+        if not form.is_valid():
+            return HttpResponseBadRequest(f"Error en los datos del formulario: {form.errors}")
+        respuesta = Respuesta()
+        respuesta.texto = form.cleaned_data['texto']
+        respuesta.autor = request.user
+        respuesta.pregunta = Pregunta.objects.get(id=question_id)
+        respuesta.save()
+        return redirect(reverse('preguntas:pregunta', args=(question_id,)))
+    else:
+        pregunta = Pregunta.objects.get(id=question_id) # obtiene la pregunta con el id
+        respuestas = Respuesta.objects.filter(pregunta=pregunta).order_by('-fecha_publicacion')
+        return render(request, "pregunta.html", {'pregunta_datos': pregunta, 'respuestas': respuestas})
 
-@require_http_methods(["POST"])
-@login_required(login_url='preguntas:login')
-def nueva_respuesta(request, question_id):
-    """Muestra el formulario de nueva respuesta (GET) o recibe el formulario y añade la respuesta (POST)"""
-    form = RespuestaForm(request.POST)
-    if not form.is_valid():
-        return HttpResponseBadRequest(f"Error en los datos del formulario: {form.errors}")
-    respuesta = Respuesta()
-    respuesta.texto = form.cleaned_data['texto']
-    respuesta.autor = request.user
-    respuesta.pregunta = Pregunta.objects.get(id=question_id)
-    respuesta.save()
-    return redirect(reverse('preguntas:pregunta', args=(question_id,)))
+# @require_http_methods(["POST"])
+# @login_required(login_url='preguntas:login')
+# def nueva_respuesta(request, question_id):
+#     """Muestra el formulario de nueva respuesta (GET) o recibe el formulario y añade la respuesta (POST)"""
+#     form = RespuestaForm(request.POST)
+#     if not form.is_valid():
+#         return HttpResponseBadRequest(f"Error en los datos del formulario: {form.errors}")
+#     respuesta = Respuesta()
+#     respuesta.texto = form.cleaned_data['texto']
+#     respuesta.autor = request.user
+#     respuesta.pregunta = Pregunta.objects.get(id=question_id)
+#     respuesta.save()
+#     return redirect(reverse('preguntas:pregunta', args=(question_id,)))
 
 
