@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}
+Preguntas
+{% endblock %}
+
+{% block content %}
+{% if pregunta_datos %}
+    <h2>{{pregunta_datos.titulo}} -- {{pregunta_datos.autor.username}} ({{pregunta_datos.fecha_publicacion}})</h2>
+    <p>{{pregunta_datos.texto}}</p>
+{% endif %}
+
+{% if respuestas %}
+    <h2>Respuestas</h2>
+    <ol>
+    {% for respuesta in respuestas %}
+        <li>{{respuesta.texto}} -- {{respuesta.autor.username}} -- {{respuesta.fecha_publicacion}}</li>
+    {% endfor %}
+    </ol>
+{% endif %}
+
+{% if form %}
+
+    <h2>Añadir nueva respuesta</h2>
+
+    <form method="post">
+        <table>
+        {{ form }}
+        </table>
+        {% csrf_token %}
+        <button type="submit">Enviar respuesta</button>
+    </form>
+{% endif %}
+{% endblock %}

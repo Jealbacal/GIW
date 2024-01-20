@@ -6,8 +6,7 @@ class LoginForm(forms.Form):
 
 class PreguntaForm(forms.Form):
     titulo = forms.CharField(label="Titulo", max_length=250)
-    texto = forms.CharField(label="Texto", max_length=5000, widget=forms.Textarea)
+    texto = forms.CharField(label="Pregunta", max_length=5000, widget=forms.Textarea)
 
 class RespuestaForm(forms.Form):
-    texto = forms.CharField(label="Texto", max_length=5000, widget=forms.Textarea)
-    
+    texto = forms.CharField(label="Respuesta", max_length=5000, widget=forms.Textarea)

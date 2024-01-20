@@ -9,14 +9,16 @@
 <h1>La web para Preguntas y Respuestas</h1>
 <p>
 {% if request.user.username %}
-<a href="{% url 'preguntas:nueva_pregunta' %}"><button type="button">Añadir pregunta</button></a>
-<a href="{% url 'preguntas:logout' %}"><button type="button">Salir</button></a>
+Bienvenido {{request.user.username}}
+<a href="{% url 'preguntas:logout' %}"><button type="button">Cerrar sesión</button></a>
+<a href="{% url 'preguntas:index' %}"><button type="button">Ver preguntas</button></a>
 {% else %}
-<a href="{% url 'preguntas:login' %}"><button type="button">Acceder</button></a>
+No autenticado
+<a href="{% url 'preguntas:login' %}"><button type="button">Iniciar sesión</button></a>
 {% endif %}
 </p>
 {% if request.user.username %}
-<p>Bienvenido {{request.user.username}}</p>
+<p></p>
 {% endif %}
 {% block content %}
 CONTENIDO

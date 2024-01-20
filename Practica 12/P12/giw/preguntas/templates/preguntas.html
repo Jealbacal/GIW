@@ -2,8 +2,9 @@
 {% block title %}
 Preguntas
 {% endblock %}
-{% block content %}
 
+
+<!-- preguntas/N
 {% if pregunta_datos %}
     <h1>{{pregunta_datos.titulo}}</h1>
     <p>{{pregunta_datos.texto}}</p>
@@ -26,23 +27,33 @@ Preguntas
         {{ form.as_p }}
         <button type="submit">Enviar</button>
     </form>
-{% endif %}
-{% endblock %}
+{% endif %} -->
 
-
+<!----------------------------------------------------------------------------->
+<!-- preguntas/ -->
+{% block content %}
+<h2>Preguntas</h2>
 <ul>
+    
 {% for pregunta in preguntas %}
-    <li> <a href="preguntas/{{preguntas.id}}">{{pregunta.titulo}}</a> -- {{pregunta.autor.nombre}} --
-        {{pregunta.fecha}}
+    <li> <a href="{{pregunta.id}}">{{pregunta.titulo}}</a> -- {{pregunta.autor.username}} 
+        ({{pregunta.fecha_publicacion|date:"j \d\e F \d\e Y \a \l\a\s H:i"}})
+        <p>{{pregunta.num_respuestas}} respuestas</p>
     </li>
 {% endfor %}
 </ul>
+
 {% if form %}
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Enviar</button>
-    </form>
+<h2>Añadir nueva pregunta</h2>
+<form action="{% url 'preguntas:index' %}" method="post">
+    <table>
+    {{ form }}
+    </table>
+    {% csrf_token %}
+    <button type="submit">Enviar pregunta</button>
+</form>
 {% endif %}
+
 {% endblock %}
+
 \end{lstlisting}

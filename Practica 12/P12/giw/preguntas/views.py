@@ -4,17 +4,19 @@ from django.http import HttpResponseBadRequest
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET, require_http_methods
-from django.core.exceptions import ValidationError
 from .models import Pregunta, Respuesta
 from .forms import LoginForm, PreguntaForm, RespuestaForm
+from django.contrib.auth.decorators import login_required
+
 # Create your views here.
 
 def index(request):
+    """Muestra todas las preguntas"""
     preguntas = Pregunta.objects.order_by('-fecha_publicacion')
     return render(request, "preguntas.html", {'preguntas': preguntas})
 
 @require_http_methods(["GET", "POST"])
-def login(request):
+def loginfunct(request):
     """Muestra el formulario (GET) o recibe los datos y realiza la autenticacion (POST)"""
     if request.method == "GET":
         form = LoginForm()
@@ -40,12 +42,8 @@ def login(request):
 def logoutfunct(request):
     """Elimina al usuario de la sesión actual"""
     logout(request)  # Elimina el usuario de la sesión
-    return redirect(reverse('opiniones:index'))
+    return redirect(reverse('preguntas:index'))
 
-
-from django.contrib.auth.decorators import login_required
-from .forms import PreguntaForm
-from .models import Pregunta
 
 @require_http_methods(["GET", "POST"])
 def preguntas(request):
@@ -53,19 +51,22 @@ def preguntas(request):
     if request.method == "POST":
         form = PreguntaForm(request.POST)
         if form.is_valid():
-            pregunta = form.save(commit=False)
-            pregunta.autor = request.user
-            pregunta.save()
+            pregunta = Pregunta(titulo=form.cleaned_data['titulo'], 
+                                texto=form.cleaned_data['texto'], 
+                                autor=request.user
+            ) # Crea el objeto pregunta
+            pregunta.save() # Guarda el objeto en la base de datos
             return redirect(reverse('preguntas:index'))
         else:
             return HttpResponseBadRequest(f"Error en los datos del formulario: {form.errors}")
     else: # GET
         todas_preguntas = Pregunta.objects.order_by('-fecha_publicacion')
         form = PreguntaForm() if request.user.is_authenticated else None
-        return render(request, "index.html", {'preguntas': todas_preguntas, 'form': form})
+
+        return render(request, "preguntas.html", {'preguntas': todas_preguntas, 'form': form})
 
 @require_http_methods(["GET", "POST"])
-@login_required(login_url='preguntas:login') # si no esta logueado, redirige a la pagina de login
+@login_required(login_url='/preguntas/login/')# si no esta logueado, redirige a la pagina de login
 def pregunta(request, question_id): # question_id es el id de la pregunta
     """Muestra la pregunta (GET)"""
     if request.method == "POST":
@@ -81,20 +82,5 @@ def pregunta(request, question_id): # question_id es el id de la pregunta
     else:
         pregunta = Pregunta.objects.get(id=question_id) # obtiene la pregunta con el id
         respuestas = Respuesta.objects.filter(pregunta=pregunta).order_by('-fecha_publicacion')
-        return render(request, "pregunta.html", {'pregunta_datos': pregunta, 'respuestas': respuestas})
-
-# @require_http_methods(["POST"])
-# @login_required(login_url='preguntas:login')
-# def nueva_respuesta(request, question_id):
-#     """Muestra el formulario de nueva respuesta (GET) o recibe el formulario y añade la respuesta (POST)"""
-#     form = RespuestaForm(request.POST)
-#     if not form.is_valid():
-#         return HttpResponseBadRequest(f"Error en los datos del formulario: {form.errors}")
-#     respuesta = Respuesta()
-#     respuesta.texto = form.cleaned_data['texto']
-#     respuesta.autor = request.user
-#     respuesta.pregunta = Pregunta.objects.get(id=question_id)
-#     respuesta.save()
-#     return redirect(reverse('preguntas:pregunta', args=(question_id,)))
-
-
+        form = RespuestaForm()
+        return render(request, "preguntas_detalles.html", {'pregunta_datos': pregunta, 'respuestas': respuestas, 'form': form})
